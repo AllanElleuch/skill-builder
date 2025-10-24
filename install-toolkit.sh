@@ -23,6 +23,42 @@ VERBOSE=false
 BOOTSTRAP=false
 TARGET_DIR=""
 BACKUP_DIR=""
+TEMP_CLONE=""
+
+#==============================================================================
+# Self-Cloning Logic (for curl | bash usage)
+#==============================================================================
+
+# Check if source files exist in current location
+if [ ! -d "$SCRIPT_DIR/.claude" ]; then
+    # Source files not found - we're likely being run via curl | bash
+    # Clone the repo to a temp location and re-execute from there
+
+    # Generate unique temp directory
+    TEMP_CLONE="/tmp/skill-builder-install-$$"
+
+    # Cleanup function
+    cleanup_temp_clone() {
+        if [ -n "$TEMP_CLONE" ] && [ -d "$TEMP_CLONE" ]; then
+            rm -rf "$TEMP_CLONE"
+        fi
+    }
+
+    # Register cleanup on exit
+    trap cleanup_temp_clone EXIT
+
+    echo -e "${BLUE}ℹ${NC} Source files not found locally, cloning repository..."
+
+    if ! git clone --quiet https://github.com/yangsi7/skill-builder.git "$TEMP_CLONE" 2>/dev/null; then
+        echo -e "${RED}✗${NC} Failed to clone repository"
+        exit 1
+    fi
+
+    echo -e "${GREEN}✓${NC} Repository cloned to temporary location"
+
+    # Re-execute the installer from the cloned location with all original arguments
+    exec "$TEMP_CLONE/install-toolkit.sh" "$@"
+fi
 
 #==============================================================================
 # Helper Functions

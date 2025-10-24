@@ -89,14 +89,21 @@ validate_target_dir() {
     if [ ! -d "$TARGET_DIR" ]; then
         print_info "Target directory doesn't exist: $TARGET_DIR"
         if [ "$DRY_RUN" = false ]; then
-            read -p "Create it? (y/n) " -n 1 -r
-            echo
-            if [[ $REPLY =~ ^[Yy]$ ]]; then
+            if [ "$FORCE" = true ]; then
+                # Force mode: create automatically
                 mkdir -p "$TARGET_DIR"
                 print_success "Created directory: $TARGET_DIR"
             else
-                print_error "Installation cancelled"
-                exit 1
+                # Interactive mode: ask user
+                read -p "Create it? (y/n) " -n 1 -r
+                echo
+                if [[ $REPLY =~ ^[Yy]$ ]]; then
+                    mkdir -p "$TARGET_DIR"
+                    print_success "Created directory: $TARGET_DIR"
+                else
+                    print_error "Installation cancelled"
+                    exit 1
+                fi
             fi
         else
             # In dry-run mode, just create a temporary directory for validation
@@ -140,7 +147,13 @@ detect_existing_files() {
     if [ "$has_existing" = false ]; then
         print_success "No existing toolkit files detected (new installation)"
     else
-        if [ "$FORCE" = false ] && [ "$DRY_RUN" = false ]; then
+        if [ "$FORCE" = true ]; then
+            # Force mode: auto-backup existing files
+            BACKUP_DIR="$TARGET_DIR/.toolkit-backup-$(date +%Y%m%d-%H%M%S)"
+            mkdir -p "$BACKUP_DIR"
+            print_success "Auto-backup enabled at: $BACKUP_DIR"
+        elif [ "$DRY_RUN" = false ]; then
+            # Interactive mode: ask user
             echo
             read -p "Existing files detected. Create backup? (y/n) " -n 1 -r
             echo
@@ -630,14 +643,17 @@ Usage: $0 [OPTIONS] <target-directory>
 
 Options:
   --dry-run         Preview changes without modifying files
-  --force           Skip confirmation prompts (use with caution)
+  --force           Fully automated mode (creates directories, auto-backups)
   --verbose         Show detailed output
   --bootstrap       Copy bootstrap templates (planning.md, todo.md, etc.)
   --help            Show this help message
 
 Examples:
-  # Interactive install
+  # Interactive install (asks for confirmation)
   $0 /path/to/project
+
+  # Fully automated install (creates dirs, backups automatically)
+  $0 --force /path/to/project
 
   # Dry run (preview changes)
   $0 --dry-run /path/to/project
@@ -645,8 +661,8 @@ Examples:
   # Install with bootstrap templates
   $0 --bootstrap /path/to/project
 
-  # Force install (skip prompts)
-  $0 --force /path/to/project
+  # Automated with bootstrap
+  $0 --force --bootstrap /path/to/project
 
 EOF
 }

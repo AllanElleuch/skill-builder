@@ -11,7 +11,8 @@ A meta-system for building intelligence-first AI agent workflows with Claude Cod
 ### One-Command Install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/yangsi7/skill-builder/master/install-toolkit.sh | bash -s -- /path/to/your/project
+# Fully automated (creates directories, auto-backups)
+curl -fsSL https://raw.githubusercontent.com/yangsi7/skill-builder/master/install-toolkit.sh | bash -s -- --force /path/to/your/project
 ```
 
 ### Or Clone and Install
@@ -19,7 +20,12 @@ curl -fsSL https://raw.githubusercontent.com/yangsi7/skill-builder/master/instal
 ```bash
 git clone https://github.com/yangsi7/skill-builder.git
 cd skill-builder
-./install-toolkit.sh --bootstrap /path/to/your/project
+
+# Automated with bootstrap templates
+./install-toolkit.sh --force --bootstrap /path/to/your/project
+
+# Or interactive (asks for confirmation)
+./install-toolkit.sh /path/to/your/project
 ```
 
 See **[INSTALL.md](INSTALL.md)** for complete installation guide.
@@ -185,10 +191,11 @@ skill-builder/
 
 ### Installation Options
 
-#### Option 1: Quick Install (Recommended)
+#### Option 1: Fully Automated (Recommended)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/yangsi7/skill-builder/master/install-toolkit.sh | bash -s -- /path/to/your/project
+# Creates directories automatically, auto-backups existing files
+curl -fsSL https://raw.githubusercontent.com/yangsi7/skill-builder/master/install-toolkit.sh | bash -s -- --force /path/to/your/project
 ```
 
 #### Option 2: Preview First (Dry Run)
@@ -196,8 +203,12 @@ curl -fsSL https://raw.githubusercontent.com/yangsi7/skill-builder/master/instal
 ```bash
 git clone https://github.com/yangsi7/skill-builder.git
 cd skill-builder
+
+# Preview what will be installed
 ./install-toolkit.sh --dry-run /path/to/your/project
-./install-toolkit.sh --bootstrap /path/to/your/project
+
+# Then run the actual install
+./install-toolkit.sh --force --bootstrap /path/to/your/project
 ```
 
 #### Option 3: Manual Install
@@ -408,5 +419,6 @@ MIT License - See LICENSE file for details
 **Start building intelligence-first AI workflows today!**
 
 ```bash
-./install-toolkit.sh --bootstrap /path/to/your/project
+# Fully automated installation (creates dirs, auto-backups, includes bootstrap templates)
+curl -fsSL https://raw.githubusercontent.com/yangsi7/skill-builder/master/install-toolkit.sh | bash -s -- --force --bootstrap /path/to/your/project
 ```

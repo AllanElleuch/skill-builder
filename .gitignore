@@ -1,0 +1,118 @@
+# Event Stream (session-specific logs)
+event-stream.md
+
+# Project Index (generated file)
+PROJECT_INDEX.json
+
+# Session ID file
+.session-id
+
+.mcp.json
+
+# Local settings
+.claude/settings.local.json
+*.local.json
+
+# Planning and Todo files (session-specific)
+planning.md
+todo.md
+
+# Generated reports, plans, handovers
+.claude/reports/
+.claude/plans/
+.claude/handovers/
+.claude/archive/
+
+# Session-specific documentation
+docs/session-*/
+docs/sessions/
+
+# OS Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor directories and files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.npm
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.venv/
+venv/
+ENV/
+env/
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.cache
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Test coverage
+coverage/
+.nyc_output/
+*.lcov
+
+# Build outputs
+out/
+dist/
+
+# System files
+*.pid
+*.seed
+*.pid.lock

@@ -24,7 +24,7 @@ This is the **Claude Code Intelligence Toolkit** - a meta-system for building in
 
 3. **Slash Commands** (.claude/commands/) - User-facing triggers (all SlashCommand tool compatible): /analyze, /bug, /feature, /plan, /implement, /verify, /audit
 
-4. **Templates** (.claude/templates/) - Structured outputs (8 templates, all use CoD^Σ traces)
+4. **Templates** (.claude/templates/) - Structured outputs (22 templates: 4 bootstrap + 18 workflow, all use CoD^Σ traces)
 
 5. **Shared Imports** (.claude/shared-imports/) - Core frameworks: CoD_Σ.md, project-intel-mjs-guide.md
 
@@ -96,6 +96,26 @@ Read src/auth/login.tsx  # Only after intel queries
 4. Use `!` prefix for bash pre-execution
 5. Command expands to full prompt when invoked
 6. Can be invoked by agents/skills via SlashCommand tool
+
+### Bootstrapping New Projects
+Use the 4 bootstrap templates to quickly set up a new project:
+
+```bash
+# Copy bootstrap templates to project root
+cp .claude/templates/planning-template.md planning.md
+cp .claude/templates/todo-template.md todo.md
+cp .claude/templates/event-stream-template.md event-stream.md
+cp .claude/templates/workbook-template.md workbook.md
+```
+
+**Templates**:
+- **planning-template.md** (8.8 KB) - Master plan with architecture (CoD^Σ), components, phases
+- **todo-template.md** (5.4 KB) - Task tracking with acceptance criteria and phase organization
+- **event-stream-template.md** (3.6 KB) - Chronological event logging with CoD^Σ compression
+- **workbook-template.md** (7.1 KB) - Context notepad for active sessions (300-line limit)
+
+**See**: @.claude/templates/BOOTSTRAP_GUIDE.md for complete bootstrap guide
+**See**: @.claude/templates/README.md for all templates reference
 
 ---
 

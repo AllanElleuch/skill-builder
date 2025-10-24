@@ -32,8 +32,9 @@ The Intelligence Toolkit is a development framework for creating:
 - **Skills** - Auto-invoked workflows (10+ included)
 - **Agents** - Specialized subagents (4 included)
 - **Slash Commands** - Quick workflow triggers (7+ included)
-- **Templates** - Structured outputs (18+ included)
+- **Templates** - Structured outputs (22 templates: 18 workflow + 4 bootstrap)
 - **Hooks** - Workflow automation
+- **Installer** - One-command installation system (NEW!)
 
 All components follow **intelligence-first** principles:
 1. Query `project-intel.mjs` (lightweight index)
@@ -111,16 +112,24 @@ Agents handle complex delegations:
 - **implementation-planner** - Architecture and planning
 - **executor-implement-verify** - TDD implementation with verification
 
-### 📝 18+ Structured Templates
+### 📝 22 Structured Templates
 
-Templates ensure consistency:
+Templates ensure consistency and provide quick project setup:
 
+**Bootstrap Templates** (for quick project setup):
+- `planning-template.md` - Master plan with architecture
+- `todo-template.md` - Task tracking with acceptance criteria
+- `event-stream-template.md` - Event logging with CoD^Σ
+- `workbook-template.md` - Context notepad (300-line limit)
+
+**Workflow Templates** (auto-used by skills/commands):
 - Feature specifications
 - Implementation plans
 - Task breakdowns
 - Analysis reports
 - Bug reports
 - Verification reports
+- Data models, research, quality checklists
 - And more...
 
 ### ⚖️ Constitutional Governance
@@ -141,17 +150,21 @@ Templates ensure consistency:
 
 ```
 skill-builder/
-├── install-toolkit.sh     # One-command installer
+├── install-toolkit.sh     # One-command installer (NEW!)
 ├── project-intel.mjs      # Intelligence query CLI
-├── INSTALL.md             # Installation guide
+├── INSTALL.md             # Installation guide (NEW!)
 ├── README.md              # This file
 ├── .claude/               # Intelligence Toolkit
 │   ├── agents/            # 4 specialized subagents
 │   ├── skills/            # 10+ auto-invoked workflows
 │   ├── commands/          # 7+ slash commands
-│   ├── templates/         # 18+ structured templates
+│   ├── templates/         # 22 structured templates (4 NEW bootstrap templates!)
+│   │   ├── *-template.md  # Bootstrap templates for quick setup
+│   │   ├── BOOTSTRAP_GUIDE.md  # Bootstrap guide (NEW!)
+│   │   └── README.md      # Templates reference (NEW!)
 │   ├── shared-imports/    # Core frameworks
-│   └── hooks/             # Workflow automation
+│   ├── hooks/             # Workflow automation
+│   └── domain-specific-imports/  # Project design processes
 ├── docs/                  # Comprehensive documentation
 │   ├── architecture/      # System design
 │   ├── guides/            # How-to guides

@@ -8,14 +8,17 @@ A meta-system for building intelligence-first AI agent workflows with Claude Cod
 
 ## Quick Start
 
-### One-Command Install
+### One-Command Install (Works from Anywhere!)
 
 ```bash
+# Run from any directory - no cloning needed!
 # Fully automated (creates directories, auto-backups)
 curl -fsSL https://raw.githubusercontent.com/yangsi7/skill-builder/master/install-toolkit.sh | bash -s -- --force /path/to/your/project
 ```
 
-### Or Clone and Install
+**Note**: The installer automatically clones the repo to a temp location, installs all components, then cleans up. You don't need to clone the repository manually.
+
+### Alternative: Clone and Install
 
 ```bash
 git clone https://github.com/yangsi7/skill-builder.git
@@ -419,6 +422,7 @@ MIT License - See LICENSE file for details
 **Start building intelligence-first AI workflows today!**
 
 ```bash
+# Run from anywhere - no cloning needed!
 # Fully automated installation (creates dirs, auto-backups, includes bootstrap templates)
 curl -fsSL https://raw.githubusercontent.com/yangsi7/skill-builder/master/install-toolkit.sh | bash -s -- --force --bootstrap /path/to/your/project
 ```

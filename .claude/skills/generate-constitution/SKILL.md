@@ -3,187 +3,131 @@ name: Generate Constitution
 description: Derive technical development principles FROM user needs in product.md using evidence-based reasoning. Creates constitution.md with architecture decisions, tech stack choices, and development constraints - all traced back to specific user needs. Use when user mentions "technical principles", "constitution", "architecture decisions", or after creating product.md.
 ---
 
-# Generate Constitution Skill
-
+@.claude/shared-imports/constitution.md
 @.claude/shared-imports/CoD_Σ.md
+@.claude/templates/product-constitution-template.md
+
+# Generate Constitution Skill
 
 ## Overview
 
-This skill derives technical principles FROM user needs documented in product.md. Every technical decision must trace back to a user need via CoD^Σ reasoning chain.
+This skill creates constitution.md by **deriving** technical principles FROM user needs documented in product.md. Every technical decision must trace back to a specific user pain point, differentiator, or journey requirement.
 
-**Critical Boundary**:
-- **product.md** = WHAT users need (no tech)
-- **constitution.md** = HOW we build it (tech derived FROM user needs)
-
-**Derivation Pattern**:
+**Core Derivation Pattern**:
 ```
 User Need (product.md) ≫ Capability Required → Technical Approach ≫ Specific Constraint (constitution.md)
 ```
+
+**Announce at start:** "I'm using the generate-constitution skill to derive technical principles from user needs in product.md."
+
+**Note**: constitution.md CANNOT be created without product.md. All technical principles MUST derive from user needs. If product.md doesn't exist, use **define-product skill** first.
+
+---
+
+## Quick Reference
+
+| Workflow | Key Activities | Output |
+|----------|---------------|--------|
+| **Derivation** | Load product.md → Map user needs → Derive principles → Organize → Create derivation map | constitution.md (v1.0.0) |
+| **Amendment** | Identify product.md changes → Update Articles → Bump version → Add history | constitution.md (vX.Y.Z) |
+| **Validation** | Check derivation chains → Verify traceability → Validate classifications | Quality report |
+
+---
+
+## Workflow Files
+
+**Detailed Workflows**:
+- **@.claude/skills/generate-constitution/workflows/derivation-workflow.md** - Steps 1-6: Create new constitution
+- **@.claude/skills/generate-constitution/workflows/amendment-workflow.md** - Update constitution when product.md changes
+- **@.claude/skills/generate-constitution/workflows/validation-checks.md** - Quality gates and quick tests
+
+**References**:
+- **@.claude/skills/generate-constitution/references/anti-patterns.md** - Common mistakes to avoid
+- **@.claude/skills/generate-constitution/references/failure-modes.md** - 12 failure modes with fixes
 
 ---
 
 ## Workflow Decision Tree
 
-**Creating new constitution?** → Follow [Derivation Workflow](#derivation-workflow)
-
-**Updating existing constitution?** → Follow [Amendment Workflow](#amendment-workflow)
-
-**Validating constitution?** → Run [Validation Checks](#validation-checks)
+```
+User Request?
+├─ Creating new constitution? → Derivation Workflow
+├─ Updating existing? → Amendment Workflow
+└─ Validating? → Validation Checks
+```
 
 ---
 
-## Derivation Workflow
+## Derivation Workflow (Create New Constitution)
+
+**See:** @.claude/skills/generate-constitution/workflows/derivation-workflow.md
+
+**Summary:**
 
 ### Step 1: Load Product Definition
 
-```bash
-Read product.md
-```
-
-**Extract user needs from**:
-- Persona pain points (specific frustrations)
-- User journey requirements (what must work)
-- "Our Thing" (key differentiators)
-- North Star metric (measurement needs)
-
----
+Read product.md and extract:
+- **Persona pain points** → NON-NEGOTIABLE efficiency principles
+- **"Our Thing" differentiator** → NON-NEGOTIABLE core principles
+- **North Star metric** → Performance and usage principles
+- **User journeys** → Capability requirements
 
 ### Step 2: Map User Needs to Technical Requirements
 
-For each user need, identify the technical implication using CoD^Σ:
+For each user need, apply derivation pattern:
+```
+User Need ≫ Capability → Technical Approach ≫ Constraint
+```
 
-**Pattern**: User Need ≫ Capability → Technical Approach ≫ Constraint
-
-**Example 1: From Pain Point**
+**Example**:
 ```
-product.md:Persona1:Pain1: "Manually copying data from 7 tools wastes 2 hours/week"
-  ≫ Automated cross-platform data sync required
-  → API integrations with automatic refresh
-  ≫ <15 minute data latency constraint
+product.md:Persona1:Pain1:118: "Manual copying wastes 2hr/week"
+  ≫ Automated sync required
+  → API integrations with refresh
+  ≫ <15 minute data latency
+→ Constitution Article: Real-Time Sync (<15min, NON-NEGOTIABLE)
 ```
-→ **Constitution Article**: Real-Time Data Sync (<15min latency, NON-NEGOTIABLE)
-
-**Example 2: From "Our Thing"**
-```
-product.md:OurThing: "Instant cross-platform visibility"
-  ≫ Dashboard load in <2 seconds required
-  → Optimized queries + caching strategy
-  ≫ Performance budget: <2s p95 load time
-```
-→ **Constitution Article**: Performance Standards (<2s dashboard, NON-NEGOTIABLE)
-
-**Example 3: From Persona Demographics**
-```
-product.md:Persona1:Demographics: "Age 65-75, low tech comfort"
-  ≫ Extreme accessibility requirements
-  → Large text, high contrast, simple UI
-  ≫ 20px minimum font, 7:1 contrast ratio, <3 taps to goal
-```
-→ **Constitution Article**: Accessibility Standards (20px font, 7:1 contrast, NON-NEGOTIABLE)
-
----
 
 ### Step 3: Derive Technical Principles
 
-For each technical requirement, create a principle with full evidence chain:
+For each user need, create an Article with:
+- **User Need Evidence** - product.md quote with line reference
+- **Technical Derivation (CoD^Σ)** - Reasoning chain with operators
+- **Principle** - Specific measurable constraint
+- **Rationale** - Why this serves the user need
+- **Verification** - How to validate compliance
 
-**Structure**:
-```markdown
-## Article N: [Principle Name] (NON-NEGOTIABLE | SHOULD | MAY)
-
-### User Need Evidence
-From product.md:[section]:[line]
-- [Quote exact user need]
-
-### Technical Derivation (CoD^Σ)
-[User Need]
-  ≫ [Capability Required]
-  → [Technical Approach]
-  ≫ [Specific Constraint]
-
-### Principle
-[Clear, specific technical constraint]
-
-### Rationale
-[Why this serves the user need]
-
-### Verification
-[How to validate compliance]
-```
-
-**Full Example**:
-```markdown
-## Article II: Real-Time Data Synchronization (NON-NEGOTIABLE)
-
-### User Need Evidence
-From product.md:Persona1:Pain1:118
-- "Manually copying campaign metrics from 7 different tools... wastes 2 hours/week"
-
-From product.md:OurThing:283
-- "See all your marketing campaigns in one dashboard, updated in real-time"
-
-### Technical Derivation (CoD^Σ)
-Manual data collection pain (product.md:Persona1:Pain1:118)
-  ⊕ Real-time visibility promise (product.md:OurThing:283)
-  ≫ Automated cross-platform sync required
-  → API polling or webhooks for each platform
-  ≫ <15 minute maximum data latency
-
-### Principle
-1. All connected platforms MUST sync data automatically with <15 minute maximum latency
-2. NO manual data entry workflows permitted
-3. All integrations MUST use webhooks where available, polling otherwise (max 5min interval)
-
-### Rationale
-Users chose this product specifically to eliminate 2 hours/week of manual copying. Any sync latency >15 minutes breaks the "real-time" promise that differentiates us.
-
-### Verification
-- Monitor data staleness: alert if any source >15min stale
-- Analytics: zero manual export/import events
-- Integration health dashboard: all sources ≤15min sync time
-```
-
----
+**Classification**:
+- **NON-NEGOTIABLE** - "Our Thing", core promises (breaks user promise if violated)
+- **SHOULD** - Strong preferences (flexibility when justified)
+- **MAY** - Options allowed (guidelines only)
 
 ### Step 4: Organize by Category
 
-Group principles into standard Articles:
+Group principles into 7 standard Articles:
+1. Architecture Patterns (microservices, event-driven, etc.)
+2. Data & Integration (database, API, sync patterns)
+3. Performance & Reliability (SLAs, latency, uptime)
+4. Security & Privacy (auth, encryption, compliance)
+5. User Experience (UI constraints, accessibility)
+6. Development Process (testing, deployment, quality)
+7. Scalability (growth constraints, capacity)
 
-1. **Article I: Architecture Patterns** - System-level (microservices, event-driven, etc.)
-2. **Article II: Data & Integration** - Database, API, sync patterns
-3. **Article III: Performance & Reliability** - SLAs, latency, uptime
-4. **Article IV: Security & Privacy** - Auth, encryption, compliance
-5. **Article V: User Experience** - UI constraints, accessibility
-6. **Article VI: Development Process** - Testing, deployment, quality
-7. **Article VII: Scalability** - Growth constraints, capacity
-
-**Priority within each Article**:
-- NON-NEGOTIABLE first (breaks user promises if violated)
-- SHOULD next (strong preferences)
-- MAY last (flexibility allowed)
-
----
+Priority within each: NON-NEGOTIABLE → SHOULD → MAY
 
 ### Step 5: Create Derivation Map
 
-Document complete traceability:
-
+Document traceability:
 ```markdown
 ## Appendix: Constitution Derivation Map
 
 | Article | Product.md Source | User Need | Technical Principle |
 |---------|-------------------|-----------|---------------------|
-| Article II | Persona1:Pain1:118 | Eliminate 2hr/week manual copying | <15min sync latency |
-| Article V | Persona2:Demographics:65 | Age 65-75, vision decline | 20px min font size |
-| Article III | OurThing:283 | "Instant visibility" | <2s dashboard load |
+| Article II | Persona1:Pain1:118 | Manual copying | <15min sync latency |
+| Article III | OurThing:283 | Instant visibility | <2s dashboard load |
 ```
 
-This enables:
-- Tracing any principle back to user need
-- Identifying orphaned principles (REMOVE THEM)
-- Validating all user needs are addressed
-
----
+Enables: Tracing principles back, identifying orphans, validating coverage.
 
 ### Step 6: Version & Metadata
 
@@ -197,56 +141,53 @@ derived_from: product.md (v1.0)
 # Development Constitution
 
 **Purpose**: Technical principles derived FROM user needs
-
 **Amendment Process**: See Article VIII
-
 **Derivation Evidence**: See Appendix
 ```
 
 ---
 
-## Amendment Workflow
+## Amendment Workflow (Update Existing Constitution)
 
-### When to Amend
+**See:** @.claude/skills/generate-constitution/workflows/amendment-workflow.md
 
-**Trigger**: Product.md changes → Constitution MUST update
+**Summary:**
+
+**Trigger**: product.md changes → constitution.md MUST update
 
 **Version Semantics**:
 - **MAJOR (X.0.0)**: Article added/removed (architectural shift)
 - **MINOR (1.X.0)**: Article modified (principle change)
 - **PATCH (1.0.X)**: Formatting, typos, clarifications
 
-### Amendment Process
-
+**Process**:
 1. Identify which user needs changed in product.md
-2. Update affected Articles
-3. Bump version number
+2. Update affected Articles with new derivation chains
+3. Bump version number (MAJOR/MINOR/PATCH)
 4. Update ratified date
 5. Update derivation map
-6. Add amendment history entry
+6. Add amendment history entry with before/after
 
-**Amendment Entry**:
+**Amendment Entry Template**:
 ```markdown
-### Version 1.1.0 - YYYY-MM-DD
-
+### Version X.Y.Z - YYYY-MM-DD
 **Changed**: Article III (Performance)
-
-**Reason**: Product.md updated North Star to include "report <10s"
-
+**Reason**: product.md North Star updated
 **Before**: Dashboard <2s only
-
 **After**: Dashboard <2s AND reports <10s
-
-**Evidence**: Product.md:NorthStar:line:15
+**Evidence**: product.md:NorthStar:line:15
 ```
 
 ---
 
 ## Validation Checks
 
-### Quality Checklist
+**See:** @.claude/skills/generate-constitution/workflows/validation-checks.md
 
-**For each Article**:
+**Summary:**
+
+### Quality Checklist (For Each Article)
+
 - [ ] Has explicit product.md reference (file:section:line)
 - [ ] User need quoted verbatim
 - [ ] CoD^Σ derivation chain documented
@@ -254,7 +195,8 @@ derived_from: product.md (v1.0)
 - [ ] Verification method defined
 - [ ] Classification clear (NON-NEGOTIABLE | SHOULD | MAY)
 
-**Overall**:
+### Overall Validation
+
 - [ ] No orphaned principles (all trace to user needs)
 - [ ] All "Our Thing" items have NON-NEGOTIABLE principles
 - [ ] All pain resolutions have technical support
@@ -279,51 +221,37 @@ derived_from: product.md (v1.0)
 
 ## Anti-Patterns
 
-### ❌ Tech Preferences Without User Justification
+**See:** @.claude/skills/generate-constitution/references/anti-patterns.md
 
-**Bad**:
-```markdown
-Use React because it's popular
-```
+**Summary of Common Mistakes:**
 
-**Good**:
-```markdown
-## Article V: Responsive UI Updates (NON-NEGOTIABLE)
-
-### User Need Evidence
-From product.md:OurThing:42
-- "Real-time updates"
-
-### Technical Derivation
-Real-time visibility ≫ <100ms UI updates → Reactive framework → React + state mgmt
-
-### Principle
-Frontend MUST use React for <100ms UI reactivity
-```
+1. **Tech preferences without user justification** - "Use React because popular" → Derive from user need
+2. **Over-constraining without evidence** - "MUST use PostgreSQL only" → Constrain capability (ACID), not product
+3. **Vague principles** - "System should be performant" → Specific measurable criteria
+4. **Missing derivation chains** - State principle without CoD^Σ → Add full reasoning chain
+5. **No verification method** - Can't validate compliance → Define specific checks
+6. **Orphaned principles** - No connection to product.md → Remove or find user need
 
 ---
 
-### ❌ Over-Constraining Without Evidence
+## Failure Modes
 
-**Bad**:
-```markdown
-MUST use PostgreSQL exclusively
-```
+**See:** @.claude/skills/generate-constitution/references/failure-modes.md
 
-**Good**:
-```markdown
-## Article III: Data Integrity (NON-NEGOTIABLE)
+**Summary of Top 12 Failures:**
 
-### User Need Evidence
-From product.md:Persona1:Pain2:25
-- "Executives distrust inconsistent data"
-
-### Technical Derivation
-Executive trust ≫ Strong consistency → ACID transactions → Relational DB
-
-### Principle
-Data storage MUST provide ACID transactions. Preferred: PostgreSQL. Acceptable: MySQL.
-```
+1. **Constitution created without product.md** → STOP, create product.md first
+2. **Technical preferences without CoD^Σ** → Add derivation chain
+3. **Orphaned principles** → Trace to product.md or delete
+4. **"Our Thing" not NON-NEGOTIABLE** → Upgrade classification
+5. **Over-constraining tech stack** → Constrain capability, not product
+6. **Missing verification methods** → Define checks
+7. **Amendment without version bump** → Follow semantic versioning
+8. **Derivation map incomplete** → Add all Articles to map
+9. **User needs not addressed** → Add missing Articles
+10. **Classification incorrect** → Run 3 quick tests
+11. **No amendment history** → Add before/after entry
+12. **Technical jargon in evidence** → Fix product.md (boundary violation)
 
 ---
 
@@ -331,9 +259,9 @@ Data storage MUST provide ACID transactions. Preferred: PostgreSQL. Acceptable: 
 
 **Complete Constitution**: See [examples/b2b-saas-constitution.md](examples/b2b-saas-constitution.md)
 
-This shows:
+Shows:
 - Full derivation chains with CoD^Σ reasoning
-- 7 Articles covering Architecture, Data, Performance, Security, UX, Testing
+- 7 Articles (Architecture, Data, Performance, Security, UX, Development, Scalability)
 - Complete derivation map tracing principles to product.md
 - Amendment history example
 - NON-NEGOTIABLE vs SHOULD classifications
@@ -352,10 +280,6 @@ This shows:
 
 ---
 
-**Next Step**: Use constitution.md to guide all architectural and implementation decisions in plan.md
-
----
-
 ## Prerequisites
 
 Before using this skill:
@@ -368,6 +292,8 @@ Before using this skill:
 - ⚠️ Optional: @.claude/templates/product-constitution-template.md (for structure)
 
 **Note**: constitution.md CANNOT be created without product.md. All technical principles MUST derive from user needs documented in product.md.
+
+---
 
 ## Dependencies
 
@@ -386,9 +312,11 @@ Before using this skill:
 - Write tool (to create constitution.md)
 - CoD^Σ operators (for derivation chains)
 
+---
+
 ## Next Steps
 
-After constitution.md creation completes, typical progression:
+After constitution.md creation completes:
 
 **Main Development Flow**:
 ```
@@ -428,81 +356,7 @@ Review affected features/plans for constitutional compliance
 - **/feature** - After constitution exists, create features with constitutional constraints
 - **/plan** - After constitution exists, plans must comply with principles
 
-## Failure Modes
-
-### Common Failures & Solutions
-
-**1. Constitution created without product.md**
-- **Symptom**: Technical principles with no user need evidence
-- **Solution**: STOP. Create product.md with define-product skill first
-- **Enforcement**: This skill MUST NOT run without product.md existing
-- **Prevention**: Skill checks for product.md in Step 1, exits if missing
-
-**2. Technical preferences without CoD^Σ derivation**
-- **Symptom**: "Use React" without user need justification
-- **Solution**: Add full derivation chain: User Need ≫ Capability → Technical Approach ≫ Constraint
-- **Article II**: Evidence-Based Reasoning requires CoD^Σ traces
-- **Prevention**: Every Article MUST have "Technical Derivation (CoD^Σ)" section
-
-**3. Orphaned principles (no product.md trace)**
-- **Symptom**: Article exists but derivation map has no product.md reference
-- **Solution**: Either add evidence FROM product.md OR delete the principle
-- **Validation**: Run "Can I trace this to a specific user pain?" test
-- **Prevention**: Derivation map MUST be complete (no gaps)
-
-**4. "Our Thing" not marked NON-NEGOTIABLE**
-- **Symptom**: Key differentiator has "SHOULD" classification
-- **Solution**: Upgrade to NON-NEGOTIABLE (breaks user promise if violated)
-- **Test**: "Can I delete this without breaking a user promise?" → NO = NON-NEGOTIABLE
-- **Prevention**: All "Our Thing" items from product.md become NON-NEGOTIABLE
-
-**5. Over-constraining tech stack**
-- **Symptom**: "MUST use PostgreSQL exclusively" when requirement is "ACID transactions"
-- **Solution**: Constrain by capability, not specific technology
-- **Pattern**: "Data storage MUST provide ACID. Preferred: PostgreSQL. Acceptable: MySQL."
-- **Prevention**: Ask "Does this constrain HOW or WHAT?" (WHAT = correct)
-
-**6. Missing verification methods**
-- **Symptom**: Principle defined but no way to validate compliance
-- **Solution**: Add "Verification" section with specific checks
-- **Example**: "Monitor data staleness: alert if any source >15min stale"
-- **Prevention**: Every Article MUST have "Verification" section
-
-**7. Amendment without version bump**
-- **Symptom**: Constitution changed but version still 1.0.0
-- **Solution**: Follow semantic versioning (MAJOR.MINOR.PATCH)
-- **Pattern**: Article added/removed = MAJOR, modified = MINOR, formatting = PATCH
-- **Prevention**: Amendment workflow (Step 2 in Amendment Process)
-
-**8. Derivation map incomplete or stale**
-- **Symptom**: Articles exist but not in derivation map
-- **Solution**: Update derivation map table with ALL Articles
-- **Validation**: Every Article row MUST appear in map
-- **Prevention**: Generate map as Step 5 in Derivation Workflow
-
-**9. User needs from product.md not addressed**
-- **Symptom**: Key pain point in product.md has no corresponding Article
-- **Solution**: Add Article with derivation chain for that pain
-- **Validation**: All "Our Thing", North Star, and top 3 pains per persona MUST have Articles
-- **Prevention**: Bidirectional validation (Product → Constitution complete)
-
-**10. Classification incorrect (NON-NEGOTIABLE vs SHOULD)**
-- **Symptom**: Nice-to-have marked NON-NEGOTIABLE OR core promise marked SHOULD
-- **Solution**: Run 3 quick tests (see Validation Checks section)
-- **Tests**: "Can I delete?" / "Trace to pain?" / "Enables Our Thing?"
-- **Prevention**: Review classification after drafting each Article
-
-**11. No amendment history**
-- **Symptom**: Constitution changed but no record of what/why
-- **Solution**: Add amendment entry with before/after comparison
-- **Pattern**: Version X.Y.Z - Date, Changed, Reason, Before, After, Evidence
-- **Prevention**: Amendment workflow Step 6 (add history entry)
-
-**12. Technical jargon in evidence quotes**
-- **Symptom**: Quoting technical terms from product.md (which shouldn't have them)
-- **Solution**: If product.md has technical terms, fix THAT first (it's wrong)
-- **Enforcement**: product.md boundary violation check
-- **Prevention**: define-product skill enforces user-centric language only
+---
 
 ## Related Skills & Commands
 
@@ -537,17 +391,14 @@ Implementation Plans (create-implementation-plan: tech stack FROM constitution)
 - **Verification**: Every Article MUST have verification method
 - **Derivation Map**: Complete bidirectional traceability
 
-**Integrations**:
-- **create-implementation-plan skill** - References constitution for architecture gates
-- **CoD^Σ framework** - Uses operators for evidence-based derivation chains
-- **Validation tools** - Quick tests for classification and traceability
-
 **Amendment Process**: When product.md changes, re-run this skill to update constitution.md with version bump and amendment history.
 
 **Workflow Recommendation**: Run this skill IMMEDIATELY after define-product to establish technical foundation before any feature development.
 
 ---
 
-**Version:** 1.0
-**Last Updated:** 2025-10-22
-**Owner:** Claude Code Intelligence Toolkit
+**Version:** 1.1.0
+**Last Updated:** 2025-10-23
+**Change Log**:
+- v1.1.0 (2025-10-23): Refactored to progressive disclosure pattern (<500 lines)
+- v1.0.0 (2025-10-22): Initial version

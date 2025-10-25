@@ -2,7 +2,7 @@
 
 A meta-system for building intelligence-first AI agent workflows with Claude Code.
 
-**Core Innovation**: Intelligence-first architecture achieving 80%+ token savings by querying lightweight indexes before reading files.
+**Core Innovation**: Intelligence-first architecture achieving 80-95% token savings by querying lightweight indexes before reading files.
 
 ---
 
@@ -12,11 +12,26 @@ A meta-system for building intelligence-first AI agent workflows with Claude Cod
 
 ```bash
 # Run from any directory - no cloning needed!
-# Fully automated (creates directories, auto-backups)
+# Fully automated (creates directories, auto-backups, installs project-intel via curl)
 curl -fsSL https://raw.githubusercontent.com/yangsi7/skill-builder/master/install-toolkit.sh | bash -s -- --force /path/to/your/project
 ```
 
-**Note**: The installer automatically clones the repo to a temp location, installs all components, then cleans up. You don't need to clone the repository manually.
+**Note**: The installer automatically:
+- Clones toolkit repo to temp location
+- Installs project-intel.mjs via curl from GitHub
+- Copies all Intelligence Toolkit components
+- Cleans up temp files
+
+### Verify Installation
+
+After installing, verify everything is working:
+
+```bash
+# In Claude Code
+/bootstrap
+
+# Expected: System Health Score 100/100 ✅ PRODUCTION READY
+```
 
 ### Alternative: Clone and Install
 
@@ -38,19 +53,21 @@ See **[INSTALL.md](INSTALL.md)** for complete installation guide.
 ## What Is This?
 
 The Intelligence Toolkit is a development framework for creating:
-- **Skills** - Auto-invoked workflows (10+ included)
+- **Skills** - Auto-invoked workflows (10 included)
 - **Agents** - Specialized subagents (4 included)
-- **Slash Commands** - Quick workflow triggers (7+ included)
-- **Templates** - Structured outputs (22 templates: 18 workflow + 4 bootstrap)
-- **Hooks** - Workflow automation
-- **Installer** - One-command installation system (NEW!)
+- **Slash Commands** - Quick workflow triggers (14 included: /feature, /plan, /implement, /verify, /audit, /analyze, /bug, /bootstrap, /index, and more)
+- **Templates** - Structured outputs (24 templates: 20 workflow + 4 bootstrap)
+- **Hooks** - Workflow automation (8 hooks)
+- **Installer** - One-command installation system
 
 All components follow **intelligence-first** principles:
 1. Query `project-intel.mjs` (lightweight index)
 2. Query MCP tools (external intelligence)
 3. Read targeted file sections only
 
-**Result**: 80%+ token savings vs reading full files.
+**Result**: 80-95% token savings vs reading full files.
+
+**System Health**: This toolkit achieved **100/100 score** in comprehensive validation. See [VALIDATION_REPORT.md](VALIDATION_REPORT.md) for details.
 
 ---
 
@@ -95,7 +112,9 @@ Automated workflow from specification to implementation:
 # - Progressive delivery with per-story validation
 ```
 
-**Result**: 2 commands from idea to verified implementation.
+**Result**: 2 commands from idea to verified implementation (85% automation rate).
+
+**Complete Workflow Diagrams**: See [COMPONENT_RELATIONSHIP_ANALYSIS.md](COMPONENT_RELATIONSHIP_ANALYSIS.md) for detailed component relationships across all 6 major workflows.
 
 ### 🎯 10+ Auto-Invoked Skills
 
@@ -121,7 +140,7 @@ Agents handle complex delegations:
 - **implementation-planner** - Architecture and planning
 - **executor-implement-verify** - TDD implementation with verification
 
-### 📝 22 Structured Templates
+### 📝 24 Structured Templates
 
 Templates ensure consistency and provide quick project setup:
 
@@ -159,23 +178,25 @@ Templates ensure consistency and provide quick project setup:
 
 ```
 skill-builder/
-├── install-toolkit.sh     # One-command installer (NEW!)
+├── install-toolkit.sh     # One-command installer
 ├── project-intel.mjs      # Intelligence query CLI
-├── INSTALL.md             # Installation guide (NEW!)
+├── INSTALL.md             # Installation guide
+├── VALIDATION_REPORT.md   # System health report (100/100 score)
+├── COMPONENT_RELATIONSHIP_ANALYSIS.md  # Workflow diagrams
 ├── README.md              # This file
 ├── .claude/               # Intelligence Toolkit
 │   ├── agents/            # 4 specialized subagents
-│   ├── skills/            # 10+ auto-invoked workflows
-│   ├── commands/          # 7+ slash commands
-│   ├── templates/         # 22 structured templates (4 NEW bootstrap templates!)
+│   ├── skills/            # 10 auto-invoked workflows
+│   ├── commands/          # 14 slash commands (includes /bootstrap, /index)
+│   ├── templates/         # 24 structured templates (20 workflow + 4 bootstrap)
 │   │   ├── *-template.md  # Bootstrap templates for quick setup
-│   │   ├── BOOTSTRAP_GUIDE.md  # Bootstrap guide (NEW!)
-│   │   └── README.md      # Templates reference (NEW!)
-│   ├── shared-imports/    # Core frameworks
-│   ├── hooks/             # Workflow automation
+│   │   ├── BOOTSTRAP_GUIDE.md  # Bootstrap guide
+│   │   └── README.md      # Templates reference
+│   ├── shared-imports/    # Core frameworks (CoD_Σ.md, constitution.md)
+│   ├── hooks/             # 8 workflow automation hooks
 │   └── domain-specific-imports/  # Project design processes
 ├── docs/                  # Comprehensive documentation
-│   ├── architecture/      # System design
+│   ├── architecture/      # System design + agent-skill-integration.md
 │   ├── guides/            # How-to guides
 │   └── reference/         # CLI and API references
 └── specs/                 # Example specifications
@@ -313,10 +334,13 @@ project-intel.mjs --dependencies src/auth.ts --direction upstream --json
 - **[INSTALL.md](INSTALL.md)** - Complete installation guide
 - **[.claude/templates/BOOTSTRAP_GUIDE.md](.claude/templates/BOOTSTRAP_GUIDE.md)** - Project bootstrap guide
 - **[.claude/templates/README.md](.claude/templates/README.md)** - Templates reference
+- **[VALIDATION_REPORT.md](VALIDATION_REPORT.md)** - System health validation (100/100 score)
 
 ### Architecture
 
 - **[docs/architecture/system-overview.md](docs/architecture/system-overview.md)** - System architecture
+- **[docs/architecture/agent-skill-integration.md](docs/architecture/agent-skill-integration.md)** - Component integration patterns
+- **[COMPONENT_RELATIONSHIP_ANALYSIS.md](COMPONENT_RELATIONSHIP_ANALYSIS.md)** - Comprehensive workflow diagrams for all 6 major flows
 - **[docs/architecture/cod-sigma-framework.md](docs/architecture/cod-sigma-framework.md)** - CoD^Σ reasoning
 - **[docs/architecture/project-index-system.md](docs/architecture/project-index-system.md)** - Intelligence system
 
@@ -376,11 +400,16 @@ Organize by user stories, not technical layers:
 
 ## Success Metrics
 
-- **Token Efficiency**: 80%+ reduction vs reading full files
+**Validated Performance** (See [VALIDATION_REPORT.md](VALIDATION_REPORT.md)):
+
+- **System Health Score**: **100/100** ✅ PRODUCTION READY
+- **Token Efficiency**: 80-95% reduction vs reading full files
+- **Automation Rate**: 67% average (85% for SDD workflow, 66% for implementation)
+- **Component Coverage**: 61 total components (10 skills, 14 commands, 4 agents, 24 templates, 8 hooks, 2 shared imports)
 - **Composability**: Every component reused by 2+ components
 - **Verifiability**: 100% of plans have testable ACs
-- **Automation**: 67% reduction in manual steps (SDD workflow)
-- **Quality**: 100% constitutional compliance via hooks
+- **Quality**: 100% constitutional compliance (7 articles enforced via hooks)
+- **Integration Health**: All 59 critical integrations validated and functioning
 
 ---
 

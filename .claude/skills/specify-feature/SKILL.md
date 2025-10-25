@@ -10,438 +10,234 @@ allowed-tools: Bash(fd:*), Bash(git:*), Bash(mkdir:*), Bash(project-intel.mjs:*)
 @.claude/templates/feature-spec.md
 @.claude/templates/requirements-quality-checklist.md
 
-# Specification Creation
+# Specification Creation Skill
 
-**Purpose**: Generate technology-agnostic feature specifications (WHAT/WHY only, no HOW) with intelligence-backed evidence and structured user stories.
+## Overview
 
-**Constitutional Authority**: Article IV (Specification-First Development), Article I (Intelligence-First Principle), Article II (Evidence-Based Reasoning), Article V (Template-Driven Quality)
+This skill creates technology-agnostic feature specifications following Article IV: Specification-First Development. It captures WHAT and WHY (user needs, requirements, success criteria) WITHOUT HOW (technical implementation, architecture, tech stack).
+
+**Core Workflow**: Quality Gate → Intelligence Gathering → User Requirements → Specification → Automatic Planning
+
+**Automatic Workflow Progression**: After creating spec.md, this skill automatically invokes /plan which chains through create-implementation-plan → generate-tasks → /audit → ready for /implement.
+
+**Announce at start:** "I'm using the specify-feature skill to create a technology-agnostic specification."
+
+---
+
+## Quick Reference
+
+| Phase | Key Activities | Output |
+|-------|---------------|--------|
+| **Phase 0** | Quality assessment (5 dimensions, 0-10 scale) | PROCEED/CLARIFY/BLOCK decision |
+| **Phase 1** | Intelligence queries (auto-number, patterns, architecture) | Evidence for spec |
+| **Phase 2** | Extract requirements (problem, stories, functional, success) | Technology-agnostic requirements |
+| **Phase 3** | Generate specification (directory, branch, spec.md) | spec.md file |
+| **Phase 4-5** | Report + automatic planning (invoke /plan) | Workflow to tasks.md + audit |
+
+---
+
+## Workflow Files
+
+- **@.claude/skills/specify-feature/workflows/quality-assessment.md** - Phase 0: Quality gate with 5 dimensions
+- **@.claude/skills/specify-feature/workflows/intelligence-gathering.md** - Phase 1: Intel-first context
+- **@.claude/skills/specify-feature/workflows/user-requirements.md** - Phase 2: WHAT/WHY extraction
+- **@.claude/skills/specify-feature/workflows/spec-generation.md** - Phase 3: Create spec.md
+- **@.claude/skills/specify-feature/workflows/automation.md** - Phase 4-5: Reporting + automatic /plan
+
+## Example & References
+
+- **@.claude/skills/specify-feature/examples/feature-creation-example.md** - Complete walkthrough
+- **@.claude/skills/specify-feature/references/specification-rules.md** - Best practices and anti-patterns
 
 ---
 
 ## Phase 0: Pre-Specification Quality Gate
 
-**CRITICAL**: Validate user input quality BEFORE creating specification.
+**See:** @.claude/skills/specify-feature/workflows/quality-assessment.md
 
-**Purpose**: Ensure user has provided sufficient context to create a high-quality specification. Block early if description is too vague or technically prescriptive.
+**Summary:**
 
-**Constitutional Authority**: Article V (Template-Driven Quality) - Quality gates enforce minimum standards
+Validate user input quality BEFORE creating specification using 5 quality dimensions (0-10 scale):
 
-### Step 0.1: Evaluate User Input Quality
+1. **Problem Clarity** - Clear problem statement, pain points, measurable impact
+2. **Value Proposition** - Business/user value, quantified benefits, success metrics
+3. **Requirements Completeness** - Key capabilities, scenarios, constraints
+4. **Technology-Agnostic** - Zero technical details, pure WHAT/WHY focus
+5. **User-Centric** - User needs central, personas, user value clear
 
-Assess user's feature description against 5 quality dimensions (0-10 scale each):
+**Thresholds**:
+- **≥ 7.0**: PROCEED to Phase 1
+- **5.0-6.9**: CLARIFY - Request specific improvements
+- **< 5.0**: BLOCK - User description too vague
 
-#### 1. Problem Clarity (0-10)
-- **10 Points**: Clear problem statement, specific pain points, measurable impact
-- **7-9 Points**: Problem stated but could be more specific
-- **4-6 Points**: Vague problem description ("improve UX", "make it better")
-- **0-3 Points**: No clear problem identified
-
-**Questions**:
-- What specific problem is being solved?
-- Who experiences this problem?
-- What is the measurable impact/cost of the problem?
-
-#### 2. Value Proposition (0-10)
-- **10 Points**: Clear business/user value, quantified benefits, success metrics
-- **7-9 Points**: Value stated but not quantified
-- **4-6 Points**: Implied value but not explicit
-- **0-3 Points**: No value justification
-
-**Questions**:
-- Why is this feature needed now?
-- What value does it deliver (time savings, revenue, user satisfaction)?
-- How will success be measured?
-
-#### 3. Requirements Completeness (0-10)
-- **10 Points**: Key capabilities described, user scenarios mentioned, constraints stated
-- **7-9 Points**: Main capabilities described, some details needed
-- **4-6 Points**: Minimal capabilities, many details missing
-- **0-3 Points**: Only feature name/title provided
-
-**Questions**:
-- What are the main capabilities needed?
-- What scenarios should be supported?
-- What are the constraints (time, budget, compliance)?
-
-#### 4. Technology-Agnostic (0-10)
-- **10 Points**: Zero technical details, pure WHAT/WHY focus
-- **7-9 Points**: Minimal technical references, easily clarified
-- **4-6 Points**: Some technical prescriptions ("use React", "REST API")
-- **0-3 Points**: Heavily technical, implementation-focused
-
-**Questions**:
-- Is the description focused on capabilities (WHAT) not implementation (HOW)?
-- Are any tech stack choices mentioned that should be removed?
-
-#### 5. User-Centric (0-10)
-- **10 Points**: User needs central, personas mentioned, user value clear
-- **7-9 Points**: User needs mentioned but not detailed
-- **4-6 Points**: System-focused, user needs implied
-- **0-3 Points**: No user perspective, purely technical
-
-**Questions**:
-- Who are the users and what do they need?
-- What user tasks/jobs does this enable?
-- How does this improve user experience?
-
-### Step 0.2: Calculate Quality Score
-
-```
-overall_score = (problem_clarity + value_proposition + requirements_completeness +
-                technology_agnostic + user_centric) / 5
-```
-
-**Scoring Thresholds**:
-- **≥ 7.0**: **PROCEED** to Phase 1 (intelligence gathering)
-- **5.0-6.9**: **CLARIFY** - Request specific improvements, then re-evaluate
-- **< 5.0**: **BLOCK** - User description too vague, request complete rework
-
-### Step 0.3: Quality Gate Decision
-
-**IF overall_score < 7.0:**
-
-**BLOCK progression** and report deficiencies to user:
-
-```markdown
-# ❌ Pre-Specification Quality Gate: BLOCKED
-
-**Overall Score**: X.X / 10.0 (Minimum required: 7.0)
-
-## Quality Assessment
-
-| Dimension | Score | Status |
-|-----------|-------|--------|
-| Problem Clarity | X/10 | [PASS/FAIL] |
-| Value Proposition | X/10 | [PASS/FAIL] |
-| Requirements Completeness | X/10 | [PASS/FAIL] |
-| Technology-Agnostic | X/10 | [PASS/FAIL] |
-| User-Centric | X/10 | [PASS/FAIL] |
-
-## Deficiencies Identified
-
-### [Dimension < 7.0]: [Score]
-**Issue**: [What is missing or unclear]
-**Example**: [Current vague statement]
-**Needed**: [Specific improvement required]
-**Question**: [Clarifying question to ask user]
-
-### [Dimension < 7.0]: [Score]
-**Issue**: [What is missing or unclear]
-**Example**: [Current vague statement]
-**Needed**: [Specific improvement required]
-**Question**: [Clarifying question to ask user]
-
-## Required Actions
-
-To proceed with specification, please provide:
-
-1. **[Dimension Name]**: [Specific information needed]
-   - Example: "Describe the specific problem: 'Users spend 15+ minutes searching for products, causing 40% cart abandonment'"
-
-2. **[Dimension Name]**: [Specific information needed]
-   - Example: "Quantify the value: 'Reduce search time to < 2 seconds, increasing conversions by 20%'"
-
-## How to Improve
-
-**Option 1: Provide Additional Context**
-Answer the questions above and re-submit your feature request with more detail.
-
-**Option 2: Use define-product Skill**
-If you're unsure of product direction, use the define-product skill to establish:
-- User personas and pain points
-- Value propositions
-- Product principles
-
-**Next**: Once you provide the missing information, I'll re-evaluate and create the specification.
-```
-
-**IF overall_score ≥ 7.0:**
-
-**PROCEED to Phase 1** and note quality score:
-
-```markdown
-# ✅ Pre-Specification Quality Gate: PASSED
-
-**Overall Score**: X.X / 10.0
-
-Quality assessment complete. Proceeding to intelligence-first specification creation...
-```
+**Why This Matters**: Prevents wasting effort on vague or technically prescriptive inputs. Quality gate catches issues before specification creation.
 
 ---
 
 ## Phase 1: Intelligence-First Context Gathering
 
-**MANDATORY**: Execute intelligence queries BEFORE any file operations.
+**See:** @.claude/skills/specify-feature/workflows/intelligence-gathering.md
+
+**Summary:**
+
+Query project intelligence BEFORE creating specification to discover existing patterns:
 
 ### Step 1.1: Auto-Number Next Feature
-
 ```bash
 !`fd --type d --max-depth 1 '^[0-9]{3}-' specs/ 2>/dev/null | sort | tail -1`
 ```
 
-Extract highest existing feature number, increment by 1 for next feature.
-
-**Example**:
-- Last feature: `specs/003-auth-system`
-- Next number: `004`
-
 ### Step 1.2: Query Existing Patterns
-
 ```bash
 !`project-intel.mjs --search "<user-keywords>" --type md --json > /tmp/spec_intel_patterns.json`
 ```
 
-Search for related features, similar requirements, existing patterns.
-
-**Save evidence** to `/tmp/spec_intel_patterns.json` for CoD^Σ tracing.
-
 ### Step 1.3: Understand Project Architecture
-
 ```bash
 !`project-intel.mjs --overview --json > /tmp/spec_intel_overview.json`
 ```
 
-Get project structure, tech stack, existing components to inform requirements.
+**Token Efficiency**: 85% savings vs reading full spec files
+
+**Why This Matters**: Intelligence evidence ensures specifications build on existing patterns rather than duplicating or conflicting with previous work.
 
 ---
 
 ## Phase 2: Extract User Requirements (WHAT/WHY Only)
 
-**Article IV Mandate**: Specifications MUST be technology-agnostic.
+**See:** @.claude/skills/specify-feature/workflows/user-requirements.md
+
+**Summary:**
+
+Extract technology-agnostic requirements focusing on WHAT and WHY, not HOW.
 
 ### Step 2.1: Problem Statement
-
-Extract from user description:
-- What problem are they trying to solve?
-- Why is this needed?
-- Who will use this?
-- What value does it provide?
-
-**NO IMPLEMENTATION DETAILS**: No tech stack, no architecture, no "how to build it".
+- What problem are we solving and why?
+- Who experiences this problem?
+- Current situation and pain points
 
 ### Step 2.2: User Stories with Priorities
-
-Organize requirements as user stories:
-
-**Format**:
-```
-## User Story 1 - [Title] (Priority: P1)
+```markdown
+## User Story <N> - [Title] (Priority: P1/P2/P3)
 
 **As a** [user type]
 **I want to** [capability]
 **So that** [value/benefit]
 
-**Why P1**: [Rationale for priority]
-
+**Why P1/P2/P3**: [Rationale for priority]
 **Independent Test**: [How to validate this story works standalone]
 
 **Acceptance Scenarios**:
 1. **Given** [state], **When** [action], **Then** [outcome]
-2. **Given** [state], **When** [action], **Then** [outcome]
 ```
 
 **Priority Levels**:
 - **P1**: Must-have for MVP (core value)
-- **P2**: Important but not blocking (enhances P1)
-- **P3**: Nice-to-have (can be deferred)
+- **P2**: Important but not blocking
+- **P3**: Nice-to-have (deferred)
 
-**Requirement**: Each story MUST be independently testable (Article VII).
+### Step 2.3: Functional Requirements
+- Core capabilities (WHAT, not HOW)
+- Data visibility and user interactions
+- Constraints and boundaries
 
-### Step 2.3: Functional Requirements (Technology-Agnostic)
+### Step 2.4: Success Criteria
+- User-centric metrics (measurable outcomes)
+- Business metrics
+- Adoption metrics
 
-Document as testable requirements:
-
-```
-- **FR-001**: System MUST [specific capability]
-- **FR-002**: Users MUST be able to [interaction]
-- **FR-003**: System MUST [behavior]
-```
-
-**Mark Unknowns**:
-```
-- **FR-004**: System MUST authenticate users via [NEEDS CLARIFICATION: auth method not specified]
-```
-
-**Maximum 3 [NEEDS CLARIFICATION] markers** - use sparingly, clarify rest through user dialogue.
+**Why This Matters**: Technology-agnostic requirements survive implementation changes and enable better tech stack decisions in planning phase.
 
 ---
 
 ## Phase 3: Generate Specification with CoD^Σ Evidence
 
-### Step 3.1: Create Feature Directory Structure
+**See:** @.claude/skills/specify-feature/workflows/spec-generation.md
 
+**Summary:**
+
+Create specification document with intelligence evidence.
+
+### Step 3.1: Create Feature Directory
 ```bash
 NEXT_NUM=$(printf "%03d" $(($(fd --type d --max-depth 1 '^[0-9]{3}-' specs/ 2>/dev/null | wc -l) + 1)))
-FEATURE_NAME="<derived-from-user-description>"  # Lowercase, hyphenated, 2-4 words
+FEATURE_NAME="<derived-from-user-description>"
 mkdir -p specs/$NEXT_NUM-$FEATURE_NAME
 ```
 
-### Step 3.2: Create Git Branch (if git repo)
-
+### Step 3.2: Create Git Branch
 ```bash
 if git rev-parse --git-dir >/dev/null 2>&1; then
     git checkout -b "$NEXT_NUM-$FEATURE_NAME"
 fi
 ```
 
-### Step 3.3: Write Specification
-
-Use `@.claude/templates/feature-spec.md` structure with:
-
-1. **YAML Frontmatter**:
-   ```yaml
-   ---
-   feature: <number>-<name>
-   created: <YYYY-MM-DD>
-   status: Draft
-   priority: P1
-   ---
-   ```
-
-2. **Problem Statement**: What problem are we solving and why?
-
-3. **User Stories**: From Step 2.2 (prioritized, independently testable)
-
-4. **Functional Requirements**: From Step 2.3 (technology-agnostic)
-
-5. **Success Criteria**: Measurable outcomes (not technical metrics)
-
-6. **CoD^Σ Evidence Trace**:
-   ```
-   Intelligence Queries:
-   - project-intel.mjs --search "<keywords>" → /tmp/spec_intel_patterns.json
-     Findings: [file:line references to similar features]
-   - project-intel.mjs --overview → /tmp/spec_intel_overview.json
-     Context: [existing architecture patterns]
-
-   Assumptions:
-   - [ASSUMPTION: rationale based on intelligence findings]
-
-   Clarifications Needed:
-   - [NEEDS CLARIFICATION: specific question]
-   ```
-
-7. **Edge Cases**: Boundary conditions, error scenarios
+### Step 3.3: Generate Specification Content
+Use @.claude/templates/feature-spec.md with:
+- YAML frontmatter (feature, created, status, priority)
+- Problem statement, user stories, functional requirements, success criteria
+- CoD^Σ Evidence Trace (intelligence queries, findings, assumptions, clarifications)
+- Edge cases
 
 ### Step 3.4: Save Specification
-
 ```bash
 Write specs/$NEXT_NUM-$FEATURE_NAME/spec.md
 ```
 
+**Why This Matters**: Evidence trace ensures all specifications have intelligence backing, not just assumptions.
+
 ---
 
-## Phase 4: Report to User
+## Phase 4-5: Reporting and Automatic Workflow Progression
 
-**Output Format**:
+**See:** @.claude/skills/specify-feature/workflows/automation.md
+
+**Summary:**
+
+Report specification completion and automatically trigger implementation planning workflow.
+
+### Phase 4: Report to User
 ```
 ✓ Feature specification created: specs/<number>-<name>/spec.md
 
-Intelligence Evidence:
-- Queries executed: project-intel.mjs --search, --overview
-- Patterns found: <file:line references>
-- Related features: <existing feature numbers>
-
-User Stories:
-- P1 stories: <count> (MVP scope)
-- P2 stories: <count> (enhancements)
-- P3 stories: <count> (future)
-
-Clarifications Needed:
-- [NEEDS CLARIFICATION markers if any, max 3]
+Intelligence Evidence: [queries + findings]
+User Stories: [P1/P2/P3 counts]
+Clarifications Needed: [0-3 markers]
 
 **Automatic Next Steps**:
 1. If clarifications needed: Use clarify-specification skill
 2. Otherwise: **Automatically create implementation plan**
 
 Invoking /plan command now...
-
-[Plan creation, task generation, and audit will proceed automatically]
 ```
 
----
-
-## Phase 5: Automatic Implementation Planning
-
-**DO NOT ask user to trigger planning** - this is automatic workflow progression (unless clarifications needed).
-
-### Step 5.1: Check for Clarifications
+### Phase 5: Automatic Implementation Planning
 
 **If [NEEDS CLARIFICATION] markers exist**:
-- Do NOT proceed to planning
-- Report clarifications needed to user
-- User must run clarify-specification skill or provide answers
+- User must run clarify-specification skill
 - After clarifications, re-run specify-feature skill
 
-**If NO clarifications** (or max 0-1 minor ones):
-- Proceed automatically to implementation planning
+**If NO clarifications**:
+- Automatically invoke /plan command via SlashCommand tool
+- Workflow progresses: /plan → create-implementation-plan → generate-tasks → /audit
+- User sees: spec.md → plan.md → research.md → data-model.md → tasks.md → audit report
 
-### Step 5.2: Invoke /plan Command
-
-**Instruct Claude**:
-
-"Specification is complete. **Automatically create the implementation plan**:
-
-Run: `/plan specs/$FEATURE/spec.md`
-
-This will:
-1. Create implementation plan with tech stack selection
-2. Generate research.md, data-model.md, contracts/, quickstart.md
-3. Define ≥2 acceptance criteria per user story
-4. **Automatically invoke generate-tasks skill**
-5. **Automatically invoke /audit quality gate**
-
-The entire workflow from planning → tasks → audit happens automatically. No manual intervention needed."
-
-### Step 5.3: Workflow Automation
-
-After `/plan` is invoked, the automated workflow proceeds:
-
-```
-/plan specs/$FEATURE/spec.md
-  ↓ (automatic)
-create-implementation-plan skill
-  ↓ (automatic)
-generate-tasks skill
-  ↓ (automatic)
-/audit $FEATURE
-  ↓
-Quality Gate Result: PASS/FAIL
-```
-
-**User sees**:
-- spec.md created ✓
-- plan.md created ✓
-- tasks.md created ✓
-- audit report generated ✓
-- Implementation readiness status
-
-**User only needs to**:
-- Review audit results
-- Fix any CRITICAL issues (if audit fails)
-- Or proceed with `/implement plan.md` (if audit passes)
-
----
-
-**Note**: This completes specification creation. Next steps happen automatically unless clarifications are needed.
-```
-
-**Constitutional Compliance**:
-- ✓ Article I: Intelligence queries executed before file operations
-- ✓ Article II: CoD^Σ trace with evidence saved to /tmp/*.json
-- ✓ Article IV: Specification is technology-agnostic (WHAT/WHY only)
-- ✓ Article VII: User stories are independently testable
+**Why This Matters**: Fully automated workflow from specification to implementation-ready state. User only needs to run /feature and /implement.
 
 ---
 
 ## Anti-Patterns to Avoid
 
+**See:** @.claude/skills/specify-feature/references/specification-rules.md
+
+**Summary:**
+
 **DO NOT**:
 - Include tech stack choices in specification
 - Design architecture or data models
 - Specify implementation details ("use React hooks", "create API endpoint")
-- Create more than 3 [NEEDS CLARIFICATION] markers (clarify through dialogue first)
-- Write vague requirements ("system should be fast" → specify "p95 latency < 200ms")
+- Create more than 3 [NEEDS CLARIFICATION] markers
+- Write vague requirements ("system should be fast")
 
 **DO**:
 - Focus on user value and business requirements
@@ -454,54 +250,18 @@ Quality Gate Result: PASS/FAIL
 
 ## Example Execution
 
+**See:** @.claude/skills/specify-feature/examples/feature-creation-example.md
+
 **User Input**: "I want to build a user authentication system with social login options"
 
-**Execution**:
-
-1. **Intelligence Queries**:
-   ```bash
-   fd --type d --max-depth 1 '^[0-9]{3}-' specs/
-   # Output: specs/001-dashboard, specs/002-api, specs/003-reporting
-   # Next: 004
-
-   project-intel.mjs --search "auth login" --type tsx --json
-   # Findings: src/components/Login.tsx:12-45 (existing login form)
-   #           src/utils/auth.ts:23 (auth helper functions)
-   ```
-
-2. **Extract Requirements**:
-   ```
-   Problem: Users need to securely access their accounts
-   Why: Enable personalized experiences and data security
-   Who: End users, administrators
-   Value: Secure access, convenience
-
-   User Stories:
-   - P1: Basic email/password authentication
-   - P2: Social login (Google, GitHub)
-   - P3: Two-factor authentication
-   ```
-
-3. **Create Feature**:
-   ```bash
-   mkdir -p specs/004-user-authentication
-   git checkout -b 004-user-authentication
-   ```
-
-4. **Write Spec** with CoD^Σ evidence, user stories, requirements
-
-5. **Report**:
-   ```
-   ✓ Feature specification created: specs/004-user-authentication/spec.md
-
-   Intelligence Evidence:
-   - Found existing: src/components/Login.tsx:12-45, src/utils/auth.ts:23
-   - Pattern: Email/password already partially implemented
-
-   User Stories: 3 total (1 P1, 1 P2, 1 P3)
-
-   Next: Run clarify-specification skill or create-implementation-plan skill
-   ```
+**Result**:
+- Quality assessment passed (7.2/10)
+- Intelligence queries executed
+- Specification created: specs/004-auth-social-login/spec.md
+- Automatic planning triggered
+- Files created: spec.md, plan.md, research.md, data-model.md, tasks.md
+- Audit passed
+- Ready for /implement
 
 ---
 
@@ -526,6 +286,8 @@ Before using this skill:
 - fd (file discovery for feature numbering)
 - git (branch creation, feature isolation)
 - project-intel.mjs (pattern discovery)
+
+---
 
 ## Next Steps
 
@@ -552,6 +314,8 @@ Ready for /implement
 **Commands**:
 - **/plan spec.md** - Automatically invoked after spec creation
 - **/implement plan.md** - User runs after audit passes
+
+---
 
 ## Agent Integration
 
@@ -605,6 +369,8 @@ implementation-planner agent (isolated context)
 6. **Automatic audit**: /audit validates consistency
 7. **Ready for implementation**: User runs `/implement plan.md` if audit passes
 
+---
+
 ## Failure Modes
 
 ### Common Failures & Solutions
@@ -639,6 +405,8 @@ implementation-planner agent (isolated context)
 - **Solution**: Intelligence detected wrong next number; manually increment
 - **Prevention**: Ensure consistent ###-name branch naming
 
+---
+
 ## Related Skills & Commands
 
 **Direct Integration**:
@@ -654,8 +422,9 @@ implementation-planner agent (isolated context)
 
 ---
 
-**Skill Version**: 1.1.0
+**Skill Version**: 1.2.0
 **Last Updated**: 2025-10-23
 **Change Log**:
+- v1.2.0 (2025-10-23): Refactored to progressive disclosure pattern (<500 lines)
 - v1.1.0 (2025-10-23): Added Phase 0 Pre-Specification Quality Gate
 - v1.0.0 (2025-10-22): Initial version with cross-skill references

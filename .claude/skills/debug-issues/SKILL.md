@@ -118,379 +118,116 @@ Issue: Accessing .discount on undefined object
 
 ### Phase 3: Intel Trace
 
-Use project-intel.mjs to trace from error to cause.
+**See:** @.claude/skills/debug-issues/workflows/intel-trace.md
 
-#### Query 1: Locate Function
+**Summary:**
 
-```bash
-project-intel.mjs --search "calculateTotal" --type ts --json > /tmp/debug_search.json
+Systematic 4-query workflow using project-intel.mjs to trace from error to root cause.
+
+**Query Workflow:**
+1. **Locate Function**: Find file containing the error-causing function
+2. **Analyze Symbols**: Get exact line numbers for functions
+3. **Trace Dependencies**: Check what the function imports
+4. **Check Dependency**: Analyze suspicious imports for return types
+
+**Token Efficiency:**
+- Intel queries: ~350 tokens
+- Targeted reads: ~400 tokens
+- **Total: ~750 tokens vs 8600 (91% savings)**
+
+### Phase 4: Root Cause Analysis
+
+**See:** @.claude/skills/debug-issues/workflows/root-cause-analysis.md
+
+**Summary:**
+
+Use targeted reads (ONLY lines identified by intel) to identify root cause with complete CoD^Σ trace.
+
+**CoD^Σ Trace Pattern:**
+```
+Step 1: → ParseError (from Phase 2)
+Step 2: ⇄ IntelQuery (locate function)
+Step 3: ⇄ IntelQuery (analyze symbols)
+Step 4: → TargetedRead (error location)
+Step 5: ⇄ IntelQuery (check dependency)
+Step 6: → TargetedRead (dependency function)
+Step 7: ⊕ MCPVerify (best practices)
+Step 8: ∘ Conclusion (root cause + fix)
 ```
 
-**Result:**
-```json
-{
-  "files": [
-    "src/pricing/calculator.ts",
-    "src/pricing/calculator.test.ts"
-  ]
-}
-```
+**Requirements:**
+- Specific file:line for root cause
+- Complete evidence chain
+- MCP verification for library behavior
+- Token efficiency analysis
 
-#### Query 2: Analyze Symbols
+### Phase 5: Bug Report Generation
 
-```bash
-project-intel.mjs --symbols src/pricing/calculator.ts --json > /tmp/debug_symbols.json
-```
+**See:** @.claude/skills/debug-issues/workflows/bug-report-generation.md
 
-**Result:**
-```json
-{
-  "symbols": [
-    {"name": "calculateTotal", "line": 62, "type": "function"},
-    {"name": "applyDiscount", "line": 89, "type": "function"},
-    {"name": "getDiscount", "line": 105, "type": "function"}
-  ]
-}
-```
+**Summary:**
 
-**Key Finding:** calculateTotal is at line 62, error at line 67 (5 lines into function)
+Generate comprehensive bug report using @.claude/templates/bug-report.md with:
 
-#### Query 3: Trace Dependencies
-
-```bash
-# What does calculateTotal import?
-project-intel.mjs --dependencies src/pricing/calculator.ts --direction upstream --json
-```
-
-**Result:**
-```json
-{
-  "imports": [
-    {"module": "./discountService", "symbols": ["getDiscount"]},
-    {"module": "../models/Cart", "symbols": ["Cart"]},
-    {"module": "../utils/currency", "symbols": ["formatPrice"]}
-  ]
-}
-```
-
-**Key Finding:** Imports getDiscount from discountService - likely source of undefined
-
-#### Query 4: Check getDiscount Function
-
-```bash
-project-intel.mjs --symbols src/pricing/discountService.ts --json
-```
-
-**Result:**
-```json
-{
-  "symbols": [
-    {"name": "getDiscount", "line": 12, "type": "function", "returns": "Discount | undefined"}
-  ]
-}
-```
-
-**CRITICAL FINDING:** getDiscount returns `Discount | undefined` - can be undefined!
-
-**Enforcement:**
-- [ ] All relevant files identified
-- [ ] Symbol locations found
-- [ ] Dependencies traced
-- [ ] Return types checked
-
-### Phase 4: Identify Root Cause
-
-Now read ONLY the relevant lines identified by intel:
-
-#### Targeted Read 1: Error Location
-
-```bash
-sed -n '62,75p' src/pricing/calculator.ts
-```
-
-**Code:**
-```typescript
-// Line 62
-export function calculateTotal(cart: Cart, discountCode?: string): number {
-  const subtotal = cart.items.reduce((sum, item) => sum + item.price * item.quantity, 0)
-
-  // Line 67 - ERROR LINE
-  const discountAmount = discountCode
-    ? getDiscount(discountCode).discount * subtotal  // ← BUG: no null check
-    : 0
-
-  const total = subtotal - discountAmount
-  return formatPrice(total)
-}
-```
-
-#### Targeted Read 2: getDiscount Function
-
-```bash
-sed -n '12,25p' src/pricing/discountService.ts
-```
-
-**Code:**
-```typescript
-// Line 12
-export function getDiscount(code: string): Discount | undefined {
-  const discount = discounts.find(d => d.code === code && d.active)
-  return discount  // ← Returns undefined when code not found
-}
-```
-
-#### Root Cause Analysis (CoD^Σ)
-
-```markdown
-**Claim:** Error occurs because calculateTotal doesn't handle undefined from getDiscount
-
-**Complete CoD^Σ Trace:**
-```
-Step 1: → ParseError
-  ↳ Source: Error log
-  ↳ Data: TypeError at src/pricing/calculator.ts:67
-
-Step 2: ⇄ IntelQuery("locate calculateTotal")
-  ↳ Query: project-intel.mjs --search "calculateTotal"
-  ↳ Data: Found in src/pricing/calculator.ts at line 62
-
-Step 3: ⇄ IntelQuery("analyze symbols")
-  ↳ Query: project-intel.mjs --symbols calculator.ts
-  ↳ Data: calculateTotal at line 62, error at line 67 (5 lines in)
-
-Step 4: → TargetedRead(lines 62-75)
-  ↳ Source: sed -n '62,75p' calculator.ts
-  ↳ Data: Line 67 calls getDiscount(code).discount without null check
-
-Step 5: ⇄ IntelQuery("check getDiscount")
-  ↳ Query: project-intel.mjs --symbols discountService.ts
-  ↳ Data: getDiscount returns Discount | undefined
-
-Step 6: → TargetedRead(getDiscount function)
-  ↳ Source: sed -n '12,25p' discountService.ts
-  ↳ Data: Returns undefined when code not found/inactive
-
-Step 7: ⊕ MCPVerify("TypeScript best practices")
-  ↳ Tool: Ref MCP
-  ↳ Query: "TypeScript optional chaining undefined handling"
-  ↳ Data: Use ?. operator for potentially undefined values
-
-Step 8: ∘ Conclusion
-  ↳ Logic: getDiscount returns undefined → accessing .discount throws TypeError
-  ↳ Root Cause: src/pricing/calculator.ts:67 - missing null check
-  ↳ Fix: Use optional chaining: getDiscount(code)?.discount ?? 0
-```
-```
-
-**Token Comparison:**
-- Reading full files: ~8600 tokens
-- Intel + targeted reads: ~750 tokens
-- **Savings: 91%**
-
-**Enforcement:**
-- [ ] Root cause identified with specific file:line
-- [ ] Complete CoD^Σ trace documented
-- [ ] MCP verification performed
-- [ ] Fix approach validated
-
-### Phase 5: Generate Bug Report
-
-Use **@.claude/templates/bug-report.md** to create comprehensive report:
-
-```markdown
----
-bug_id: "checkout-discount-500"
-severity: "critical"
-status: "open"
-assigned_to: "executor-agent"
----
-
-# Bug Report: 500 Error on Checkout with Discount
-
-## Symptom
-[Full symptom from Phase 1]
-
-## CoD^Σ Trace
-[Complete trace from Phase 4]
-
-## Root Cause
-**Location:** src/pricing/calculator.ts:67
-
-**Issue:** Missing null check before accessing .discount property
-
-**Why It Fails:**
-- getDiscount() returns Discount | undefined
-- When discount code invalid/inactive, returns undefined
-- Code attempts undefined.discount → TypeError
-
-## Fix Specification
-**Approach:** Add optional chaining
-
-**Changes Required:**
-```typescript
-// Before (buggy)
-const discountAmount = discountCode
-  ? getDiscount(discountCode).discount * subtotal
-  : 0
-
-// After (fixed)
-const discountAmount = discountCode
-  ? (getDiscount(discountCode)?.discount ?? 0) * subtotal
-  : 0
-```
-
-**Reason:**
-- Optional chaining (?.) returns undefined if getDiscount returns undefined
-- Nullish coalescing (?? 0) provides default value
-- No TypeError, discount defaults to 0 for invalid codes
-
-## Verification
-**Test Plan:**
-```typescript
-it('handles invalid discount codes gracefully', () => {
-  const cart = { items: [{ price: 100, quantity: 1 }] }
-  const total = calculateTotal(cart, 'INVALID_CODE')
-  expect(total).toBe(100) // No discount applied, no error
-})
-```
-
-**Acceptance Criteria:**
-- [ ] Invalid discount codes return subtotal (no discount)
-- [ ] Valid discount codes still apply correctly
-- [ ] No TypeError thrown
-```
+**Required Sections:**
+1. **Symptom** - From Phase 1
+2. **CoD^Σ Trace** - From Phase 4
+3. **Root Cause** - Specific file:line + explanation
+4. **Fix Specification** - Exact code changes (before/after)
+5. **Verification** - Test plan + acceptance criteria
 
 **File Naming:** `YYYYMMDD-HHMM-bug-<id>.md`
 
-**Enforcement:**
-- [ ] Bug report uses template
-- [ ] CoD^Σ trace complete
-- [ ] Root cause with file:line specified
-- [ ] Fix proposal provided
-- [ ] Verification plan included
-
 ## Common Error Patterns
 
-### Pattern 1: React Infinite Re-render
+**See:** @.claude/skills/debug-issues/examples/error-patterns.md
 
-**Symptom:**
-```
-Warning: Maximum update depth exceeded
-Component: LoginForm
-```
+**Summary:**
 
-**Debugging Process:**
-```
-1. Search for component: project-intel.mjs --search "LoginForm" --type tsx
-2. Analyze symbols: Find useEffect hooks
-3. Targeted read: Check dependency arrays
-4. Common cause: useEffect depends on value it mutates
-5. MCP verify: Ref MCP "React useEffect dependencies"
-6. Fix: Remove mutated value from dependencies or use functional setState
-```
+Three frequently encountered patterns with systematic debugging approaches:
 
-### Pattern 2: N+1 Query Problem
+1. **React Infinite Re-render** - useEffect dependency on mutated value
+2. **N+1 Query Problem** - Database queries inside loops
+3. **Memory Leak** - Missing cleanup in useEffect
 
-**Symptom:**
-```
-Slow page load (10+ seconds)
-Dashboard with 100 users
-```
-
-**Debugging Process:**
-```
-1. Search for data fetch: project-intel.mjs --search "fetchUsers"
-2. Analyze code: Look for loops around database queries
-3. Common pattern:
-   users.forEach(user => {
-     const posts = await db.query("SELECT * FROM posts WHERE user_id = ?", user.id)
-   })  // ← Query inside loop!
-4. Fix: Single query with JOIN or WHERE IN clause
-```
-
-### Pattern 3: Memory Leak
-
-**Symptom:**
-```
-Browser tab memory grows over time
-Eventually crashes
-```
-
-**Debugging Process:**
-```
-1. Search for event listeners: project-intel.mjs --search "addEventListener"
-2. Check useEffect cleanup: Look for return functions
-3. Common issue: Missing cleanup
-4. MCP verify: Ref MCP "React useEffect cleanup"
-5. Fix: Add cleanup function:
-   useEffect(() => {
-     window.addEventListener('resize', handler)
-     return () => window.removeEventListener('resize', handler)  // ← Cleanup
-   }, [])
-```
+Each pattern includes:
+- Symptom identification
+- Step-by-step debugging process
+- Common root causes
+- Fix approaches with code examples
+- Verification steps
 
 ## Enforcement Rules
 
-### Rule 1: Complete CoD^Σ Trace
+**See:** @.claude/skills/debug-issues/references/debugging-rules.md
 
-**❌ Violation:**
-```
-The bug is in the discount calculation.
-```
+**Summary:**
 
-**✓ Correct:**
-```
-Root cause: src/pricing/calculator.ts:67
+Three mandatory rules for all bug diagnosis:
 
-CoD^Σ Trace:
-Step 1: ParseError → TypeError at line 67
-Step 2: IntelQuery → getDiscount returns undefined
-Step 3: MCPVerify → TypeScript docs confirm optional chaining needed
-Step 4: Conclusion → Missing null check causes error
-```
+**Rule 1: Complete CoD^Σ Trace**
+- Every step must have evidence source
+- File:line references required
+- MCP queries documented
+- Conclusion follows logically
 
-### Rule 2: Intel Before Reading
+**Rule 2: Intel Before Reading**
+- ALWAYS query project-intel.mjs first
+- Use targeted reads (sed -n 'X,Yp')
+- Document token savings
+- Never read full files
 
-**❌ Violation:**
-```bash
-# Read entire codebase looking for bug
-cat src/**/*.ts  # Thousands of lines
-```
+**Rule 3: Fix with Verification**
+- Propose specific code changes
+- Include test plan
+- Define acceptance criteria
+- Verify fix addresses root cause
 
-**✓ Correct:**
-```bash
-# Intel-first approach
-project-intel.mjs --search "calculateTotal"  # Find exact file
-project-intel.mjs --symbols calculator.ts    # Find exact line
-sed -n '62,75p' calculator.ts                # Read only relevant lines
-```
-
-### Rule 3: Propose Fix with Verification
-
-**❌ Violation:**
-```
-Fix: Change the code to handle undefined.
-```
-
-**✓ Correct:**
-```
-Fix: Use optional chaining at line 67:
-  getDiscount(code)?.discount ?? 0
-
-Verification:
-- Test with invalid code (should return subtotal)
-- Test with valid code (should apply discount)
-- AC: No errors thrown for any input
-```
-
-## Common Pitfalls
-
-| Pitfall | Impact | Solution |
-|---------|--------|----------|
-| Assumptions without verification | Wrong diagnosis | Use MCP to verify library behavior |
-| Skipping intel queries | Token waste | Always query before reading |
-| Incomplete reproduction steps | Can't verify fix | Document exact steps |
-| No fix proposal | Bug remains open | Always propose specific fix |
+**Common Pitfalls:**
+- Assumptions without MCP verification
+- Skipping intel queries (91% token waste)
+- Incomplete reproduction steps
+- No fix proposal
 
 ## When to Use This Skill
 
@@ -687,6 +424,10 @@ debug-issues skill (re-run with additional context)
 
 ## Version
 
-**Version:** 1.0
-**Last Updated:** 2025-10-22
+**Version:** 1.1.0
+**Last Updated:** 2025-10-23
 **Owner:** Claude Code Intelligence Toolkit
+
+**Change Log**:
+- v1.1.0 (2025-10-23): Refactored to progressive disclosure pattern (<500 lines)
+- v1.0.0 (2025-10-22): Initial version with systematic debugging workflow

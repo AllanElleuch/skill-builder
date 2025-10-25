@@ -322,9 +322,13 @@ project-intel.mjs --overview --json | jq '.files[]' | xargs -I {} project-intel.
 ## Troubleshooting
 
 ### Issue: "PROJECT_INDEX.json not found"
-**Solution:** Run index generation first:
+**Solution:** Run `/index` command to generate the index:
 ```bash
-project-intel.mjs --generate-index
+# In Claude Code
+/index
+
+# Or directly via node
+node project-intel.mjs --generate-index
 ```
 
 ### Issue: "No results for search"
@@ -340,7 +344,11 @@ project-intel.mjs --search "auth"
 ### Issue: "Index is stale"
 **Solution:** Regenerate after file changes:
 ```bash
-project-intel.mjs --generate-index --force
+# In Claude Code
+/index
+
+# Or directly via node
+node project-intel.mjs --generate-index --force
 ```
 
 ### Issue: "JSON parse error"

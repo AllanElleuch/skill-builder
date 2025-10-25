@@ -16,6 +16,18 @@ allowed-tools: Read, Write
 
 ---
 
+## Quick Reference
+
+| Phase | Key Activities | Output | Article |
+|-------|---------------|--------|---------|
+| **1. Load Context** | Validate prerequisites, load spec.md, plan.md, supporting docs | Context loaded | Article IV |
+| **2-3. Task Generation** | Organize by user story, generate tests/impl/verification | Task phases | Article VII, III |
+| **4. Parallelization** | Mark [P] for tasks that can run simultaneously | [P] markers added | Article VIII |
+| **5. Quality Gate** | Automatically invoke /audit for validation | Audit report | Article V |
+| **6. Generate tasks.md** | Write using template, report completion | tasks.md | All |
+
+---
+
 ## Phase 1: Load Context
 
 ### Step 1.1: Validate Prerequisites
@@ -70,301 +82,74 @@ Read specs/$FEATURE/quickstart.md  # Test scenarios
 
 ---
 
-## Phase 2: Organize Tasks by User Story (Article VII)
+## Phase 2-3: Task Generation Workflow
 
-**CRITICAL**: Tasks MUST be grouped by user story, NOT by technical layer.
+**See:** @.claude/skills/generate-tasks/workflows/task-generation.md
 
-### Phase Structure
+**Summary**:
 
-**Required Phases**:
-1. **Phase 1: Setup** - Project initialization, dependencies
-2. **Phase 2: Foundational** - Blocking prerequisites for ALL stories
-3. **Phase 3+: User Story Phases** - One phase per story (P1, P2, P3...)
-4. **Final Phase: Polish & Cross-Cutting** - Documentation, cleanup
+**Phase 2: Organize by User Story** (Article VII mandate)
+- Required phase structure: Setup → Foundational → User Story Phases → Polish
+- One phase per user story (P1, P2, P3...)
+- Within each story: Tests → Implementation → Verification
 
-**Within Each Story Phase**:
-```
-Phase N: User Story PX - [Title]
-
-Goal: [What user can do after this phase]
-Independent Test: [How to validate this story works standalone]
-
-Tasks:
-1. Tests (if TDD required)
-2. Models needed for this story
-3. Services needed for this story
-4. Endpoints/UI needed for this story
-5. Integration for this story
-6. Verification of this story
-```
-
----
-
-## Phase 3: Generate Tasks
-
-### Step 3.1: Phase 1 - Setup Tasks
-
-**Purpose**: Initialize project structure, install dependencies
+**Phase 3: Generate Tasks**
+- Setup tasks: Project initialization, dependencies
+- Foundational tasks: Blocking prerequisites for ALL stories
+- User Story tasks: Test-first approach (Article III)
+  - Tests (≥2 per story)
+  - Implementation (models, services, endpoints, UI)
+  - Verification (run tests, validate independently)
+- Polish tasks: Documentation, cleanup
 
 **Task Format**:
-```
-- [ ] T001 Create project structure per implementation plan
-- [ ] T002 [P] Install dependencies: <list from plan.md>
-- [ ] T003 [P] Configure environment variables
-- [ ] T004 [P] Set up development database
-```
-
-**Parallel Marker** `[P]`: Tasks that can run simultaneously (different files, no dependencies)
-
-### Step 3.2: Phase 2 - Foundational Tasks
-
-**Purpose**: Blocking prerequisites that ALL user stories depend on
-
-**Examples**:
-```
-- [ ] T005 Create base database schema (users table)
-- [ ] T006 Set up authentication middleware
-- [ ] T007 Configure error handling and logging
-```
-
-**NOT user-story-specific**: These enable multiple stories.
-
-### Step 3.3: Phase 3+ - User Story Tasks
-
-**Article VII Mandate**: One phase per user story, organized by priority.
-
-#### Step 3.3.1: Identify Story Components
-
-For each user story from spec.md:
-
-**Map to Components** (from plan.md):
-- Which models does this story need?
-- Which services does this story need?
-- Which endpoints/UI does this story need?
-- Which tests validate this story?
-
-**Example**: User Story P1 - Email/Password Registration
-
-Components needed:
-- Model: User (enhance existing)
-- Service: AuthService (new)
-- API: POST /register (new)
-- UI: RegisterForm (new)
-- Tests: Registration flow tests
-
-#### Step 3.3.2: Generate Tasks with Article III Compliance
-
-**Test-First Mandate** (Article III): Tests MUST come before implementation.
-
-**Task Sequence**:
-```
-## Phase 3: User Story P1 - Email/Password Registration
-
-**Story Goal**: Users can create accounts with email and password
-
-**Independent Test**: Can register new user, receive session token, login with credentials
-
-**Dependencies**: Phase 2 (foundational) complete
-
-### Tests (Article III: Test-First)
-- [ ] T008 [P] [US1] Write test for AC-P1-001 (valid registration) in tests/auth/register.test.ts
-- [ ] T009 [P] [US1] Write test for AC-P1-002 (weak password rejection) in tests/auth/register.test.ts
-
-### Implementation
-- [ ] T010 [US1] Enhance User model with password_hash field in models/user.ts
-- [ ] T011 [US1] Create AuthService.register() method in services/auth-service.ts
-- [ ] T012 [US1] Implement POST /api/auth/register endpoint in api/auth/register.ts
-- [ ] T013 [US1] Create RegisterForm component in components/auth/RegisterForm.tsx
-- [ ] T014 [US1] Integrate RegisterForm with /register route in pages/register.tsx
-
-### Verification
-- [ ] T015 [US1] Run AC tests (must pass 100%)
-- [ ] T016 [US1] Test registration flow end-to-end with quickstart scenario
-- [ ] T017 [US1] Verify story works independently (no other stories required)
-```
-
-**Task ID Format**: T### (sequential numbering)
-**Story Label Format**: [US#] where # is story number (US1, US2, US3...)
-**Parallel Marker**: [P] for parallelizable tasks
-
-#### Step 3.3.3: Repeat for All User Stories
-
-Generate phases for:
-- Phase 4: User Story P2
-- Phase 5: User Story P3
-- ...
-
-Each phase:
-- Independent test criteria
-- Tests before implementation
-- Story-specific tasks only
-- Verification step
-
-### Step 3.4: Final Phase - Polish
-
-**Purpose**: Cross-cutting concerns, documentation, cleanup
-
-**Examples**:
-```
-## Phase N: Polish & Cross-Cutting Concerns
-
-- [ ] T### [P] Update API documentation
-- [ ] T### [P] Run full test suite
-- [ ] T### [P] Perform security audit
-- [ ] T### Run linter and fix issues
-- [ ] T### Build and verify production bundle
-- [ ] T### Update changelog
-```
+- Task ID: T### (sequential numbering)
+- Story Label: [US#] for traceability
+- Parallel Marker: [P] for simultaneous execution
 
 ---
 
-## Phase 4: Mark Parallelization (Article VIII)
+## Phase 4: Parallelization Marking
 
-### Criteria for [P] Marker
+**See:** @.claude/skills/generate-tasks/workflows/parallelization.md
 
-Task is parallelizable if:
-1. **Different files**: No file conflicts with other parallel tasks
-2. **No dependencies**: Doesn't depend on incomplete tasks
-3. **Independent**: Can run without coordination
+**Summary**:
 
-**Example**:
-```
-✓ [P] - [ ] T008 [P] [US1] Write test in tests/auth/register.test.ts
-✓ [P] - [ ] T009 [P] [US1] Write test in tests/auth/login.test.ts
-          (Different files, no dependencies)
+Mark tasks with `[P]` if they meet ALL criteria:
+1. **Different files** - No file conflicts with other parallel tasks
+2. **No dependencies** - Doesn't depend on incomplete tasks
+3. **Independent** - Can run without coordination
 
-✗ NO [P] - [ ] T010 [US1] Enhance User model
-✗ NO [P] - [ ] T011 [US1] Create AuthService using User model
-          (T011 depends on T010, must be sequential)
-```
+**Common Patterns**:
+- Test writing (different test files) → Parallel
+- Setup tasks (independent config) → Parallel
+- Documentation updates (different docs) → Parallel
+- Model dependencies (B uses A) → Sequential
 
----
-
-## Phase 5: Validate Task Completeness
-
-### Step 5.1: Check User Story Coverage
-
-**For EACH user story**, verify:
-- ✓ Has ≥2 tests (one per AC minimum)
-- ✓ All components identified in plan.md have tasks
-- ✓ Has verification task
-- ✓ Has independent test criteria
-
-### Step 5.2: Check Acceptance Criteria Coverage
-
-**For EACH AC** (from plan.md), verify:
-- ✓ Has corresponding test task
-- ✓ Test task comes before implementation tasks
-- ✓ AC is verifiable in verification task
-
-**Example**:
-```
-AC-P1-001: User can register with valid credentials
-→ T008: Write test for AC-P1-001
-→ T010-T014: Implementation
-→ T015: Verify AC-P1-001 passes
-```
-
-### Step 5.3: Check Dependencies
-
-**Verify**:
-- Phase 1 (Setup) has no dependencies
-- Phase 2 (Foundational) depends only on Phase 1
-- Each User Story phase depends only on Foundational
-- Final Phase depends on all User Story phases
-
-**Create dependency graph**:
-```
-Phase 1 (Setup)
-    ↓
-Phase 2 (Foundational)
-    ↓
-Phase 3 (US P1) ←┐
-Phase 4 (US P2) ←┼→ Independent (can be done in any order)
-Phase 5 (US P3) ←┘
-    ↓
-Phase 6 (Polish)
-```
+**Document** parallel opportunities per phase in summary.
 
 ---
 
-## Phase 5: Quality Gate Enforcement (Article V)
+## Phase 5: Quality Gate Enforcement
 
-**Constitutional Mandate**: Template-Driven Quality requires automatic validation before implementation.
+**See:** @.claude/skills/generate-tasks/workflows/quality-gates.md
 
-### Step 5.1: Invoke /audit Command Automatically
+**Summary**:
 
-After tasks.md is successfully created, **automatically** trigger the quality gate.
+After tasks.md created, **automatically invoke /audit command** (Article V requirement).
 
 **DO NOT ask user to run /audit manually** - this is automatic enforcement.
 
-**Instruct Claude**:
+**Audit Validates**:
+1. Article IV compliance (spec → plan → tasks sequence)
+2. Article VII compliance (user-story-centric organization)
+3. Article III compliance (≥2 ACs per story, tests first)
+4. Constitution violations (CRITICAL priority)
+5. Requirement coverage (100% expected)
+6. Ambiguities and underspecification
 
-"Now that tasks.md is complete, run the **quality gate validation** to verify cross-artifact consistency:
-
-`/audit $FEATURE_ID`
-
-This command will:
-1. Validate Article IV compliance (spec → plan → tasks sequence)
-2. Verify Article VII compliance (user-story-centric organization)
-3. Check Article III compliance (≥2 ACs per user story)
-4. Detect constitution violations (CRITICAL priority)
-5. Identify missing requirement coverage
-6. Find ambiguities and underspecification
-
-**If audit finds CRITICAL issues**:
-- Implementation is BLOCKED until issues resolved
-- Report violations to user
-- Provide remediation guidance
-
-**If audit passes all checks**:
-- Report 'Ready for implementation'
-- User can proceed with `/implement plan.md`
-
-The audit report will be saved as: `YYYYMMDD-HHMM-audit-$FEATURE_ID.md`"
-
-### Step 5.2: Handle Audit Results
-
-**On CRITICAL failures**:
-```
-⚠ Quality Gate FAILED - Implementation BLOCKED
-
-Critical Issues Found:
-- [List of CRITICAL findings from audit]
-
-Next Actions:
-1. Fix CRITICAL issues in spec.md, plan.md, or tasks.md
-2. Re-run /tasks to regenerate tasks.md
-3. Audit will re-validate automatically
-
-Implementation cannot proceed until audit passes.
-```
-
-**On successful audit**:
-```
-✓ Quality Gate PASSED - Ready for Implementation
-
-All validation checks passed:
-- Constitution compliance: ✓
-- Requirements coverage: 100%
-- User story organization: ✓
-- Acceptance criteria: ≥2 per story ✓
-
-Next Step: Run /implement plan.md to begin implementation
-```
-
-### Step 5.3: Record Audit Invocation
-
-Log in tasks.md that audit was run:
-
-```markdown
-## Quality Gate
-
-**Status**: Audit ran automatically on task generation
-**Report**: YYYYMMDD-HHMM-audit-$FEATURE_ID.md
-**Result**: [PASS/FAIL]
-**Date**: [YYYY-MM-DD HH:MM]
-```
+**On CRITICAL failures**: Implementation BLOCKED, user must fix issues and re-run /tasks
+**On successful audit**: Ready for `/implement plan.md`
 
 ---
 
@@ -439,84 +224,41 @@ If audit fails: Fix CRITICAL issues first, then re-run /tasks
 
 ---
 
-## Anti-Patterns to Avoid
+## Anti-Patterns & Best Practices
 
-**DO NOT**:
-- Organize by layer ("All models", "All services", "All UI")
-- Create tasks without [US#] story labels
-- Skip test tasks (Article III violation)
-- Mix multiple stories in one phase
-- Create tasks that span stories (violates independence)
-- Forget to mark parallelizable tasks with [P]
-- Create < 2 tests per user story (Article III violation)
+**See:** @.claude/skills/generate-tasks/references/anti-patterns.md
 
-**DO**:
-- Organize by user story (Phase per story)
-- Label tasks with [US#] for traceability
-- Tests before implementation (TDD)
-- Independent test criteria per story
-- Mark parallel tasks with [P]
-- Map every AC to ≥1 test task
-- Verify 100% AC coverage
+**Critical Anti-Patterns to Avoid**:
+- ❌ Layer-based organization ("All models", "All services")
+- ❌ Tasks without [US#] story labels
+- ❌ Skipping test tasks (Article III violation)
+- ❌ Mixing multiple stories in one phase
+- ❌ Creating <2 tests per story
+- ❌ Forgetting [P] parallelization markers
+
+**Best Practices**:
+- ✓ Organize by user story (one phase per story)
+- ✓ Label all tasks with [US#]
+- ✓ Tests before implementation (TDD)
+- ✓ Independent test criteria per story
+- ✓ Mark parallel tasks with [P]
+- ✓ Verify 100% AC coverage
 
 ---
 
 ## Example Task Breakdown
 
-**Input**: Plan with 2 user stories (P1: Register, P2: Login)
+**See:** @.claude/skills/generate-tasks/examples/task-examples.md
 
-**Output**: tasks.md with 6 phases
+**Complete Example**: User Authentication feature with 2 user stories (Registration, Login)
 
-```markdown
-## Phase 1: Setup
-- [ ] T001 Create project structure
-- [ ] T002 [P] Install dependencies
-- [ ] T003 [P] Configure environment
-
-## Phase 2: Foundational
-- [ ] T004 Create users table schema
-- [ ] T005 Set up Supabase client
-
-## Phase 3: User Story P1 - Registration
-Independent Test: Can register and login
-
-### Tests
-- [ ] T006 [P] [US1] Test AC-P1-001 (valid registration)
-- [ ] T007 [P] [US1] Test AC-P1-002 (weak password rejection)
-
-### Implementation
-- [ ] T008 [US1] Enhance User model with password_hash
-- [ ] T009 [US1] Create AuthService.register()
-- [ ] T010 [US1] Implement POST /api/auth/register
-- [ ] T011 [US1] Create RegisterForm component
-
-### Verification
-- [ ] T012 [US1] Run all US1 tests (must pass)
-- [ ] T013 [US1] Test US1 independently
-
-## Phase 4: User Story P2 - Login
-Independent Test: Can login with registered credentials
-
-### Tests
-- [ ] T014 [P] [US2] Test AC-P2-001 (valid login)
-- [ ] T015 [P] [US2] Test AC-P2-002 (invalid credentials)
-
-### Implementation
-- [ ] T016 [US2] Create AuthService.login()
-- [ ] T017 [US2] Implement POST /api/auth/login
-- [ ] T018 [US2] Create LoginForm component
-
-### Verification
-- [ ] T019 [US2] Run all US2 tests (must pass)
-- [ ] T020 [US2] Test US2 independently
-
-## Phase 5: Polish
-- [ ] T021 [P] Update API docs
-- [ ] T022 [P] Run full test suite
-- [ ] T023 Build production bundle
-```
-
-**Result**: 23 tasks, organized by story, tests-first, parallelization marked.
+**Demonstrates**:
+- Setup → Foundational → User Story Phases → Polish structure
+- Test-first approach (Article III)
+- Story-centric organization (Article VII)
+- [P] parallelization markers (Article VIII)
+- Independent test criteria per story
+- 100% AC coverage with test task mapping
 
 ---
 
@@ -707,5 +449,34 @@ This skill does NOT directly use the Task tool. It:
 
 ---
 
-**Skill Version**: 1.0.0
-**Last Updated**: 2025-10-22
+## Success Metrics
+
+**Task Organization Quality:**
+- 100% user-story-centric (Article VII compliance)
+- 100% AC coverage (every AC has ≥1 test task)
+- ≥2 ACs per user story (Article III requirement)
+- All tasks labeled with [US#] for traceability
+
+**Progressive Delivery:**
+- Each story has independent test criteria
+- Stories can be demoed without dependencies
+- Clear priority order (P1 → P2 → P3)
+- MVP (P1) implementable first
+
+**Efficiency:**
+- Parallel opportunities identified ([P] markers)
+- Dependencies documented clearly
+- Sequential tasks ordered correctly
+- Audit passes on first generation
+
+---
+
+## Version
+
+**Version:** 1.1.0
+**Last Updated:** 2025-10-23
+**Owner:** Claude Code Intelligence Toolkit
+
+**Change Log**:
+- v1.1.0 (2025-10-23): Refactored to progressive disclosure pattern (<500 lines)
+- v1.0.0 (2025-10-22): Initial version with automatic audit enforcement

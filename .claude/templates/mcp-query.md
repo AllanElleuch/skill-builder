@@ -58,6 +58,46 @@ mcp shadcn_search_items_in_registries query="button" registries=["@shadcn"]
 
 ---
 
+## Reasoning Chain (CoD^Σ)
+<!-- Document the verification workflow leading to this MCP query -->
+
+**Verification Pipeline:**
+```
+Step 1: → IntelQuery([source])
+  ↳ Source: [project-intel.mjs or analysis]
+  ↳ Finding: [What was discovered in code]
+  ↳ Uncertainty: [What needs authoritative confirmation]
+
+Step 2: ⊕ MCPQuery([tool])
+  ↳ Tool: [MCP tool selected]
+  ↳ Query: [Specific question]
+  ↳ Expected: [What authoritative answer we seek]
+
+Step 3: ⇄ Comparison
+  ↳ Intel: [What code shows]
+  ↳ MCP: [What official docs say]
+  ↳ Match: [Agreement or discrepancy]
+
+Step 4: ∘ Conclusion
+  ↳ Verification: [Confirmed or contradiction found]
+  ↳ Action: [What to do with this authoritative info]
+```
+
+**Composition:**
+```
+IntelQuery ≫ MCPVerify ⇄ Comparison → [Decision | Report]
+```
+
+**Token Efficiency:**
+```
+Intel Query: [X] tokens (code location)
+MCP Query:   [Y] tokens (authoritative verification)
+Total:       [X+Y] tokens vs [Z] tokens for reading docs manually
+Savings:     [percentage]%
+```
+
+---
+
 ## Expected Output
 
 ### Output Format

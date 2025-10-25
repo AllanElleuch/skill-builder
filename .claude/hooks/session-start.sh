@@ -15,7 +15,7 @@ if [[ ! "$FEATURE" =~ ^[0-9]{3}- ]]; then
 fi
 
 # Define feature directory
-FEATURE_DIR="specs/$FEATURE"
+FEATURE_DIR="$CLAUDE_PROJECT_DIR/specs/$FEATURE"
 
 # Check artifact existence
 SPEC_EXISTS=$([ -f "$FEATURE_DIR/spec.md" ] && echo "true" || echo "false")
@@ -33,34 +33,43 @@ else
     STATE="ready"
 fi
 
-# Output JSON for Claude to consume
+# Determine next action
+case "$STATE" in
+  needs_spec) NEXT_ACTION="Create specification with specify-feature skill" ;;
+  needs_plan) NEXT_ACTION="Create implementation plan with create-implementation-plan skill" ;;
+  needs_tasks) NEXT_ACTION="Generate tasks with generate-tasks skill" ;;
+  ready) NEXT_ACTION="Begin implementation with implement-and-verify skill" ;;
+esac
+
+# Build context message for Claude
+CONTEXT_MESSAGE="## SDD Workflow Status
+
+**Feature**: $FEATURE
+**Directory**: $FEATURE_DIR
+
+**Artifacts**:
+- spec.md: $([ "$SPEC_EXISTS" = "true" ] && echo "✓ EXISTS" || echo "❌ MISSING") ($FEATURE_DIR/spec.md)
+- plan.md: $([ "$PLAN_EXISTS" = "true" ] && echo "✓ EXISTS" || echo "❌ MISSING") ($FEATURE_DIR/plan.md)
+- tasks.md: $([ "$TASKS_EXISTS" = "true" ] && echo "✓ EXISTS" || echo "❌ MISSING") ($FEATURE_DIR/tasks.md)
+
+**Workflow State**: $STATE
+**Next Action**: $NEXT_ACTION
+
+**Automated SDD Workflow**:
+1. /feature → specify-feature skill → spec.md
+2. /plan (auto-invoked) → create-implementation-plan skill → plan.md
+3. /tasks (auto-invoked) → generate-tasks skill → tasks.md
+4. /audit (auto-invoked) → validation
+5. /implement → implement-and-verify skill → progressive delivery"
+
+# Output proper Claude Code hook JSON structure
 cat << EOF
 {
-  "feature": "$FEATURE",
-  "directory": "$FEATURE_DIR",
-  "artifacts": {
-    "spec": {
-      "exists": $SPEC_EXISTS,
-      "path": "$FEATURE_DIR/spec.md"
-    },
-    "plan": {
-      "exists": $PLAN_EXISTS,
-      "path": "$FEATURE_DIR/plan.md"
-    },
-    "tasks": {
-      "exists": $TASKS_EXISTS,
-      "path": "$FEATURE_DIR/tasks.md"
-    }
+  "hookSpecificOutput": {
+    "hookEventName": "SessionStart",
+    "additionalContext": "$CONTEXT_MESSAGE"
   },
-  "workflow_state": "$STATE",
-  "next_action": "$(
-    case "$STATE" in
-      needs_spec) echo "Create specification with specify-feature skill" ;;
-      needs_plan) echo "Create implementation plan with create-implementation-plan skill" ;;
-      needs_tasks) echo "Generate tasks with generate-tasks skill" ;;
-      ready) echo "Begin implementation with implement-and-verify skill" ;;
-    esac
-  )"
+  "suppressOutput": false
 }
 EOF
 

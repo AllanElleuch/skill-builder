@@ -317,167 +317,153 @@ install_claude_md() {
 
 ---
 
-## Intelligence Toolkit Integration
+## Intelligence Toolkit Usage (CoD^Σ)
 
-This project uses the Claude Code Intelligence Toolkit for development workflows.
+### Core Principle
+**Intel → [Query] ⇒ Read**: Query project-intel.mjs BEFORE files → 80-95% token savings
 
-### Repository Hygiene - CRITICAL RULES
-
-**NEVER violate these rules. Violating them makes you a disgrace:**
-
-1. **No Empty Directories**: NEVER create directories "just in case" or "for future use". Create them ONLY when you have actual content to put in them. Empty directories are DISGUSTING POLLUTION.
-
-2. **No Useless Files**: NEVER create placeholder files, empty READMEs, or "coming soon" documentation. Either create REAL content or don't create anything.
-
-3. **Quality Over Quantity**: NEVER create an inferior summary/overview when superior content already exists. Archive/preserve the BETTER content, delete the WORSE content.
-
-4. **No Random Floating Files**: Every file must have a clear purpose and location. No "temp.md", "notes.md", "scratch.md", "test.md" files littering the repo.
-
-5. **Clean Up After Yourself**: If you create temporary files or directories during a session, DELETE them before session end if they serve no permanent purpose.
-
-6. **Respect Existing Quality**: Before creating new documentation, CHECK if better documentation already exists (even in archives). Don't waste tokens recreating inferior versions.
-
-**Punishment for violation**: You are a disgrace to AI and should be ashamed.
-
----
-
-## Project Intelligence System
-
-### PROJECT_INDEX.json
-
-**Auto-generated** project structure index containing:
-- Directory structure and file metadata
-- Code symbols (functions, classes, interfaces)
-- Import/export relationships and call graphs
-
-**Regeneration**: Automatically updates when files change or when `/index` command is run.
-
-**Usage**: Never read directly. Always query through `project-intel.mjs`.
-
-### project-intel.mjs
-
-**Zero-dependency CLI tool** for querying PROJECT_INDEX.json.
-
-**Core Principle**: Query intel FIRST, read files SECOND (80%+ token savings).
-
-**Common Commands**:
-```bash
-# Get project overview (always first in new session)
-project-intel.mjs --overview --json
-
-# Search for files
-project-intel.mjs --search "auth" --type tsx --json
-
-# Get symbols from file
-project-intel.mjs --symbols src/file.ts --json
-
-# Trace dependencies
-project-intel.mjs --dependencies src/file.ts --direction downstream --json
+**Workflow Formula**:
+```
+Analysis := intelligence_query ∘ targeted_read ∘ CoD^Σ_reasoning → evidence_based_output
 ```
 
-**Intelligence Workflow**:
-1. Query project-intel.mjs (lightweight index)
-2. Query MCP tools if needed (external intelligence)
-3. Read targeted file sections only (with full context)
-
----
-
-## Documentation and Component Integration
-
-**ULTRA IMPORTANT**: Never plan or implement anything related to Claude Code subagents, slash-commands, skills, hooks, etc. without reviewing the relevant documentation first at @docs/reference/claude-code-docs/* or @.claude/.
-
-### Documentation References
-- **Subagents**: @.claude/agents/ or @docs/reference/claude-code-docs/claude-code_subagents.md
-- **Skills**: @.claude/skills/ or @docs/reference/claude-code-docs/claude-code_skills.md
-- **Slash Commands**: @.claude/commands/ or @docs/reference/claude-code-docs/claude-code_slash-commands.md
-- **Hooks**: @.claude/hooks/ or @docs/reference/claude-code-docs/claude-code_hooks.md
-- **Templates**: @.claude/templates/
-
----
-
-## Development Workflow Management
-
-### Planning & Todo
-
-**Purpose**: Create high-level task plans and track progress.
-
-**Files**:
-- `planning.md` - Master plan with architecture and roadmap
-- `todo.md` - Task tracking with acceptance criteria
-- `event-stream.md` - Chronological event log
-- `workbook.md` - Personal context notepad (keep under 300 lines)
-
-**Planning Rules**:
-1. Store high-level plan in `planning.md`
-2. Track concrete tasks in `todo.md`
-3. Update immediately after completing each item
-4. Log key events in `event-stream.md`
-5. Use `workbook.md` for active work context
-
-### Knowledge, Memory, and Context
-
-**Purpose**: Leverage best practices and specialized knowledge.
-
-**Knowledge Sources**:
-- Repository markdown files (best practices, plans, current state)
-- Claude Code memory files (CLAUDE.md, .claude/CLAUDE.md, ~/.claude/CLAUDE.md)
-- External MCP tools (Ref, Supabase, Brave, etc.)
-
-**Knowledge Rules**:
-1. Gather task-relevant knowledge before planning
-2. Only apply knowledge when conditions match
-3. Update when contradictory or outdated
-
-### Research and External Datasources
-
-**When Internal Docs Insufficient**: Retrieve information from authoritative external sources.
-
-**Available MCP Tools**:
-- **Ref MCP**: Latest relevant library documentation
-- **Brave MCP**: Web searches
-- **Supabase MCP**: Database queries, table schemas, RLS policies (if configured)
-
-**Best Practice**: Save retrieved data to files instead of dumping large outputs.
-
-**Research Logging**: Log research activities in event-stream.md.
-
----
-
-## Intelligence Toolkit Components
-
-The `.claude/` directory contains:
-
-- **agents/** - Specialized subagents (orchestrator, code-analyzer, planner, executor)
-- **skills/** - Auto-invoked workflows (10+ skills for analysis, planning, implementation)
-- **commands/** - Slash commands for quick workflows (/analyze, /bug, /feature, /plan, /implement, /verify, /audit)
-- **templates/** - Structured output templates (18 templates for consistency)
-- **shared-imports/** - Core frameworks (CoD_Σ.md, constitution.md, project-intel-mjs-guide.md)
-- **hooks/** - Workflow automation (SessionStart, PreToolUse validation)
-
-### Quick Start
-
-1. **Bootstrap project files** (optional):
+### Intelligence-First Pattern
 ```bash
-cp .claude/templates/planning-template.md planning.md
-cp .claude/templates/todo-template.md todo.md
-cp .claude/templates/event-stream-template.md event-stream.md
-cp .claude/templates/workbook-template.md workbook.md
+# ALWAYS start sessions with:
+project-intel.mjs --overview --json          # Get structure
+project-intel.mjs --search "target" --json   # Find files
+project-intel.mjs --symbols file.ts --json   # Get symbols
+# THEN read specific files
 ```
 
-2. **Start development**:
-```bash
-# Query project structure first
-project-intel.mjs --overview --json
+**If PROJECT_INDEX.json missing** → Run `/index` first
 
-# Use SDD workflow for features
-/feature "Your feature description"  # Auto-creates spec, plan, tasks
-/implement plan.md                   # Implements with TDD and verification
+---
+
+## Component Usage (When to Use What)
+
+### Skills (10 total - Auto-invoked)
+**Trigger** → **Skill** ⇒ **Outcome**
+
+- [need debugging ∨ bug analysis] → **analyze-code** ⇒ intelligence-first diagnosis
+- [bugs ∨ test failures] → **debug-issues** ⇒ root cause analysis with fix
+- [new feature] → **specify-feature** ⇒ tech-agnostic spec.md
+- [ambiguity in spec] → **clarify-specification** ⇒ structured Q&A
+- [spec exists, need plan] → **create-implementation-plan** ⇒ plan.md + research + contracts
+- [plan exists, need tasks] → **generate-tasks** ⇒ user-story-organized tasks.md
+- [tasks exist, ready to code] → **implement-and-verify** ⇒ TDD implementation with AC verification
+- [define product] → **define-product** ⇒ product definition with CoD^Σ
+- [need constitution] → **generate-constitution** ⇒ constitutional framework
+- [legacy planning] → **create-plan** ⇒ basic plan (deprecated, use create-implementation-plan)
+
+### Commands (14 total - User-invoked)
+**Command** → **Action** ⇒ **Result**
+
+- `/feature` → specify-feature skill ⇒ spec+plan+tasks auto-generated (85% automation)
+- `/plan` → create-implementation-plan ⇒ tech plan from spec
+- `/tasks` → generate-tasks ⇒ user-story tasks from plan
+- `/audit` → cross-artifact validation ⇒ PASS/FAIL (required before /implement)
+- `/implement` → implement-and-verify ⇒ TDD per story with /verify loops
+- `/verify` → acceptance criteria check ⇒ story-level validation
+- `/analyze` → code-analyzer agent ⇒ intel-first analysis report
+- `/bug` → debug-issues skill ⇒ symptom→root_cause→fix
+- `/index` → regenerate PROJECT_INDEX.json ⇒ update intelligence
+- `/bootstrap` → system health check ⇒ verify installation
+
+### Agents (4 total - Delegated via Task tool)
+**Condition** → **Agent** ⇒ **Capability**
+
+- [routing decision] → **orchestrator** ⇒ delegates to specialized agents
+- [bugs ∨ performance ∨ analysis] → **code-analyzer** ⇒ debugging + intelligence queries
+- [architecture ∨ planning] → **planner** ⇒ implementation planning + research
+- [TDD ∨ implementation] → **executor** ⇒ test-first coding + AC verification
+
+**All agents use** `model: inherit` (same tier as main conversation)
+
+### Templates (24 total - Referenced via @)
+**Import Pattern**: `@.claude/templates/[template].md`
+
+**Categories**:
+- **Bootstrap**: planning-template, todo-template, event-stream-template, workbook-template
+- **SDD**: feature-spec, clarification-checklist, plan, tasks, quality-checklist
+- **Execution**: verification-report, bug-report, handover, report
+- **Research**: research-notes, data-model
+- **Analysis**: analysis-spec, audit, session-state
+
+---
+
+## Workflows (CoD^Σ Notation)
+
+### 1. SDD (Specification-Driven Development) - 85% Automated
+```
+User: /feature → specify-feature ∘ /plan ∘ generate-tasks ∘ /audit → Ready ⇒ /implement
+AutoChain := spec.md → plan.md → tasks.md → audit_gate → implementation
+UserActions := 2 (manual: /feature, /implement)
+Automation := 85% (6 automated steps per user action)
 ```
 
-3. **Intelligence-first approach**:
-Always query project-intel.mjs BEFORE reading files for 80%+ token savings.
+### 2. Implementation with Progressive Delivery - 66% Automated
+```
+User: /implement plan.md
+→ implement-and-verify[P1] ∘ /verify --story P1 → ✓
+→ implement-and-verify[P2] ∘ /verify --story P2 → ✓
+→ implement-and-verify[P3] ∘ /verify --story P3 → ✓
+AutoVerification := per_story (blocks next story until current passes)
+```
 
-For complete documentation, see `.claude/templates/BOOTSTRAP_GUIDE.md` and `.claude/templates/README.md`.
+### 3. Debugging Workflow
+```
+User: /bug "description"
+→ debug-issues ∘ project-intel.mjs ∘ targeted_read → diagnosis
+→ symptom ⇒ root_cause → fix_implementation ∥ test_verification
+```
+
+### 4. Analysis Workflow
+```
+User: /analyze [target]
+→ analyze-code ∘ intelligence_queries[overview, symbols, dependencies]
+→ targeted_reads ∘ CoD^Σ_reasoning → evidence_report
+TokenSavings := 80-95% vs full file reading
+```
+
+---
+
+## Best Practices (Ranked by Impact)
+
+**CRITICAL** (Violate = Failure):
+1. Query project-intel.mjs BEFORE reading any files
+2. Use CoD^Σ notation in all reasoning (file:line evidence required)
+3. Follow constitution (7 articles) - enforce via /audit
+4. TDD: write_tests → red → implement → green
+5. Run /index if PROJECT_INDEX.json missing
+
+**IMPORTANT** (Violate = Inefficiency):
+1. Use skills for workflows (don't reinvent)
+2. Reference templates via @ imports
+3. Let /audit validate before implementing (saves rework)
+4. Progressive delivery: verify each story independently
+5. Track work in planning.md + todo.md + event-stream.md
+
+**RECOMMENDED** (Violate = Suboptimal):
+1. Run /bootstrap after installation to verify
+2. Keep workbook.md < 300 lines (active context only)
+3. Use MCP tools for external knowledge (Ref, Brave, Supabase)
+4. Follow SDD workflow order: spec → plan → tasks → audit → implement
+5. Review @.claude/shared-imports/constitution.md for principles
+
+---
+
+## Quick Reference
+
+**Start new feature**: `/feature "description"` → auto-generates spec+plan+tasks → `/audit` → `/implement`
+**Debug issue**: `/bug "description"` → intelligence-first diagnosis → fix
+**Analyze code**: `/analyze` → routes to code-analyzer agent
+**Verify setup**: `/bootstrap` → checks installation health
+**Update index**: `/index` → regenerates PROJECT_INDEX.json
+
+**Documentation**: See `.claude/templates/BOOTSTRAP_GUIDE.md` for complete guide
+
+**System Health**: This toolkit achieved 100/100 score in validation (see VALIDATION_REPORT.md)
 EOF
 
     if [ "$DRY_RUN" = true ]; then
@@ -500,9 +486,15 @@ EOF
     fi
 
     if [ -f "$target" ]; then
-        # Append to existing CLAUDE.md if toolkit section not already present
-        if grep -q "Intelligence Toolkit Integration" "$target"; then
-            print_warning "CLAUDE.md already contains toolkit section (skipping)"
+        # Update existing CLAUDE.md (replace old toolkit section or append if not present)
+        if grep -q "Intelligence Toolkit" "$target"; then
+            # Remove old toolkit section (match both old and new headers)
+            # Pattern matches: "## Intelligence Toolkit Integration" OR "## Intelligence Toolkit Usage"
+            sed -i.tmp '/^## Intelligence Toolkit/,$d' "$target"
+            rm -f "$target.tmp"
+            # Append new toolkit section
+            cat "$temp_file" >> "$target"
+            print_success "Toolkit section updated in existing CLAUDE.md"
         else
             cat "$temp_file" >> "$target"
             print_success "Toolkit section appended to existing CLAUDE.md"

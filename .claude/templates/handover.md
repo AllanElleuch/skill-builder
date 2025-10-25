@@ -20,6 +20,31 @@ token_limit: 600
 
 ---
 
+## Reasoning Chain (CoD^Σ)
+<!-- Document the workflow leading to this handover -->
+
+**Delegation Path:**
+```
+Step 1: [Agent] → [Action]
+  ↳ Context: [What was done]
+  ↳ Output: [Result/finding]
+
+Step 2: [Agent] ⇄ [Query/Analysis]
+  ↳ Source: [Intel/MCP query]
+  ↳ Finding: [Discovery that triggered handover]
+
+Step 3: [Agent] → Handover([To Agent])
+  ↳ Reason: [Why this agent is next]
+  ↳ Expectation: [What receiving agent should do]
+```
+
+**Composition:**
+```
+[From Agent workflow] ∘ Handover → [To Agent workflow]
+```
+
+---
+
 ## Pending Tasks
 
 ### Task 1: [Task Name]

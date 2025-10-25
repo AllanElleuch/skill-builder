@@ -40,6 +40,68 @@ Each dimension scored 0-10:
 
 ---
 
+## Quality Assessment Workflow (CoD^Σ)
+<!-- Document how 9-dimensional quality assessment composes into readiness determination -->
+
+**Assessment Pipeline:**
+```
+Step 1: ∥ DimensionEvaluation (parallel)
+  ↳ D1: Requirement Completeness [0-10]
+  ↳ D2: Requirement Clarity [0-10]
+  ↳ D3: Requirement Consistency [0-10]
+  ↳ D4: Acceptance Criteria Quality [0-10]
+  ↳ D5: Scenario Coverage [0-10]
+  ↳ D6: Edge Case Coverage [0-10]
+  ↳ D7: Non-Functional Requirements [0-10]
+  ↳ D8: Dependencies & Assumptions [0-10]
+  ↳ D9: Ambiguities & Conflicts [0-10]
+  ↳ Output: [dimension_scores[1-9]]
+
+Step 2: ⊕ ScoreAggregation
+  ↳ Formula: overall_score = Σ(dimension_scores) / 9
+  ↳ Output: [overall_score]
+
+Step 3: ∘ ReadinessClassification
+  ↳ Logic: if overall_score ≥ 7.0 → "READY"
+  ↳ Logic: else if overall_score ≥ 5.0 → "READY WITH RISKS"
+  ↳ Logic: else → "NOT READY"
+  ↳ Output: [readiness_status]
+
+Step 4: → ActionRecommendation
+  ↳ Input: [readiness_status, critical_issues]
+  ↳ Mapping: status → next_actions
+  ↳ Output: [actionable_guidance]
+```
+
+**Composition Formula:**
+```
+DimensionEvaluations ∥ [D1-D9] ⊕ ScoreAggregation ∘ ReadinessClassification → ActionRecommendation
+```
+
+**Decision Flow:**
+```
+Overall Score?
+├─ ≥ 7.0 → ✅ READY
+│   └─ Action: Proceed to /implement
+│
+├─ 5.0-6.9 → ⚠️ READY WITH RISKS
+│   └─ Action: Document risks, proceed with caution
+│
+└─ < 5.0 → ❌ NOT READY
+    └─ Action: Refine spec → clarify → re-validate
+
+Critical Issues?
+├─ YES (any dimension) → ⚠️ Blocks implementation even if score ≥ 7.0
+└─ NO → Proceed based on overall score
+```
+
+**Quality Gate Formula:**
+```
+Implementation_Ready := (overall_score ≥ 7.0) ∧ (critical_issues = 0)
+```
+
+---
+
 ## Dimension 1: Requirement Completeness (0-10)
 
 **Score**: [X/10]

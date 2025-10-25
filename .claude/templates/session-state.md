@@ -67,6 +67,59 @@ Hooks should output JSON to stdout for Claude Code to consume.
 | `in_progress` | Implementation started but not complete | Continue with `/implement` or `/verify` |
 | `complete` | All user stories verified and complete | Feature done! |
 
+---
+
+## Workflow State Reasoning (CoD^Σ)
+<!-- Document how workflow state is determined through composition of checks -->
+
+**State Determination Pipeline:**
+```
+Step 1: → FeatureDetection
+  ↳ Source: git branch OR environment variable
+  ↳ Pattern: ###-feature-name
+  ↳ Result: [feature-id or null]
+
+Step 2: ∥ ArtifactChecks
+  ↳ Check: spec.md exists?
+  ↳ Check: plan.md exists?
+  ↳ Check: tasks.md exists?
+  ↳ Check: audit report exists?
+  ↳ Result: [artifact_status_map]
+
+Step 3: ∘ StateComputation
+  ↳ Logic: if !spec → "needs_spec"
+  ↳ Logic: else if !plan → "needs_plan"
+  ↳ Logic: else if !tasks → "needs_tasks"
+  ↳ Logic: else if !audit → "needs_audit"
+  ↳ Logic: else → "ready_for_implementation"
+  ↳ Result: [computed_state]
+
+Step 4: → NextActionMapping
+  ↳ Input: [computed_state]
+  ↳ Mapping: state → recommended_action
+  ↳ Output: [actionable_guidance]
+```
+
+**Composition Formula:**
+```
+FeatureDetection ≫ ArtifactChecks ∥ [spec, plan, tasks, audit] ∘ StateComputation → NextAction
+```
+
+**Decision Flow:**
+```
+spec.md?
+├─ NO  → needs_spec ─→ "Run /feature"
+└─ YES → plan.md?
+    ├─ NO  → needs_plan ─→ "Run /plan"
+    └─ YES → tasks.md?
+        ├─ NO  → needs_tasks ─→ "Auto-invoked after /plan"
+        └─ YES → audit?
+            ├─ NO  → needs_audit ─→ "Run /audit"
+            └─ YES → ready_for_implementation ─→ "Run /implement"
+```
+
+---
+
 ### Example Output
 
 ```json

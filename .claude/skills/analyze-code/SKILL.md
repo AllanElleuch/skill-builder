@@ -13,6 +13,8 @@ This skill performs comprehensive code analysis using an **intel-first approach*
 
 **Announce at start:** "I'm using the analyze-code skill to investigate this issue."
 
+---
+
 ## Quick Reference
 
 | Phase | Key Activities | Token Budget | Output |
@@ -24,17 +26,37 @@ This skill performs comprehensive code analysis using an **intel-first approach*
 
 **Total: ~2000 tokens vs 20000+ for direct file reading**
 
+---
+
+## Workflow Files
+
+**Detailed Workflows**:
+- **@.claude/skills/analyze-code/workflows/analysis-workflow.md** - Complete Phases 1-4 (scope, intel queries, MCP verification, report generation)
+
+**Reference Materials**:
+- **@.claude/skills/analyze-code/references/decision-trees.md** - 3 analysis type decision trees (bug diagnosis, architecture, performance)
+- **@.claude/skills/analyze-code/references/enforcement-rules.md** - 3 non-negotiable rules (no naked claims, intel before reading, MCP for authority)
+- **@.claude/skills/analyze-code/references/failure-modes.md** - 5 common failures with solutions
+
+---
+
 ## Templates You Will Use
 
 - **@.claude/templates/analysis-spec.md** - Scope definition (Phase 1)
 - **@.claude/templates/report.md** - Final analysis report (Phase 4)
 - **@.claude/templates/mcp-query.md** - Optional MCP queries (Phase 3)
 
+---
+
 ## Intelligence Tool Guide
 
 - **@.claude/shared-imports/project-intel-mjs-guide.md** - Complete project-intel.mjs usage
 
-## The Process
+---
+
+## The Process (Overview)
+
+**See:** @.claude/skills/analyze-code/workflows/analysis-workflow.md for complete details
 
 Copy this checklist to track progress:
 
@@ -64,106 +86,70 @@ Analysis Progress:
    - "Complete dependency graph generated"
    - "Performance bottleneck located"
 
-**Enforcement:**
+**Enforcement Checklist:**
 - [ ] Objective is clear and answerable
 - [ ] In-scope/out-of-scope explicitly defined
 - [ ] Success criteria are testable
 
-**Example:**
-```markdown
 ---
-spec_id: "analysis-login-rerender"
-type: "bug-diagnosis"
----
-
-## Objective
-Identify why LoginForm component re-renders infinitely in development.
-
-## Scope
-**In-Scope:**
-- LoginForm component (src/components/LoginForm.tsx)
-- useEffect hooks and dependencies
-- State management related to login
-
-**Out-of-Scope:**
-- Backend API endpoints
-- Database queries
-- Production environment
-
-## Success Criteria
-- [ ] Root cause identified with specific file:line
-- [ ] Fix approach validated with React docs (MCP)
-- [ ] CoD^Σ trace shows complete reasoning chain
-```
 
 ### Phase 2: Execute Intel Queries
 
 **CRITICAL:** Execute ALL intel queries BEFORE reading any files.
 
-#### Query 1: Project Overview (if first analysis)
-```bash
-project-intel.mjs --overview --json > /tmp/analysis_overview.json
-```
-**Purpose:** Understand project structure, entry points, file counts
-**Tokens:** ~50
+**4 Required Query Types:**
 
-#### Query 2: Search for Relevant Files
-```bash
-project-intel.mjs --search "<pattern>" --type <filetype> --json > /tmp/analysis_search.json
-```
-**Purpose:** Locate files related to objective
-**Tokens:** ~100
+1. **Project Overview** (if first analysis in session):
+   ```bash
+   project-intel.mjs --overview --json > /tmp/analysis_overview.json
+   ```
+   Purpose: Understand project structure, entry points, file counts
+   Tokens: ~50
 
-**Example:**
-```bash
-# For "login form" analysis
-project-intel.mjs --search "login" --type tsx --json
-# Result: Found LoginForm.tsx, LoginButton.tsx, LoginAPI.ts
-```
+2. **Search for Relevant Files**:
+   ```bash
+   project-intel.mjs --search "<pattern>" --type <filetype> --json > /tmp/analysis_search.json
+   ```
+   Purpose: Locate files related to objective
+   Tokens: ~100
 
-#### Query 3: Symbol Analysis
-For each relevant file:
-```bash
-project-intel.mjs --symbols <filepath> --json > /tmp/analysis_symbols_<filename>.json
-```
-**Purpose:** Understand functions/classes without reading full file
-**Tokens:** ~150 per file
+3. **Symbol Analysis** (for each relevant file):
+   ```bash
+   project-intel.mjs --symbols <filepath> --json > /tmp/analysis_symbols_<filename>.json
+   ```
+   Purpose: Understand functions/classes without reading full file
+   Tokens: ~150 per file
 
-**Example:**
-```bash
-project-intel.mjs --symbols src/components/LoginForm.tsx --json
-# Result: LoginForm at line 12, useEffect at line 45, useState at line 15
-```
+4. **Dependency Tracing**:
+   ```bash
+   # What does this file import?
+   project-intel.mjs --dependencies <filepath> --direction upstream --json > /tmp/analysis_deps_up.json
 
-#### Query 4: Dependency Tracing
-For key files:
-```bash
-# What does this file import?
-project-intel.mjs --dependencies <filepath> --direction upstream --json > /tmp/analysis_deps_up.json
-
-# What imports this file?
-project-intel.mjs --dependencies <filepath> --direction downstream --json > /tmp/analysis_deps_down.json
-```
-**Purpose:** Understand dependencies and impact
-**Tokens:** ~200 total
-
-**Now you know WHERE to look** - read only targeted lines using `sed -n 'X,Yp'`
+   # What imports this file?
+   project-intel.mjs --dependencies <filepath> --direction downstream --json > /tmp/analysis_deps_down.json
+   ```
+   Purpose: Understand dependencies and impact
+   Tokens: ~200 total
 
 **Token Comparison:**
 - Reading full LoginForm.tsx (1000 lines): ~3000 tokens
 - Intel queries + targeted read (30 lines): ~300 tokens
 - **Savings: 90%**
 
-**Enforcement:**
+**Enforcement Checklist:**
 - [ ] All 4 query types executed
 - [ ] Intel results saved to /tmp/ for evidence
 - [ ] No files read before intel queries complete
+
+**See:** @.claude/skills/analyze-code/workflows/analysis-workflow.md for complete query examples
+
+---
 
 ### Phase 3: MCP Verification
 
 Verify findings with authoritative sources:
 
-#### When to Use Each MCP
+**When to Use Each MCP:**
 
 | MCP Tool | Use For | Example |
 |----------|---------|---------|
@@ -172,220 +158,128 @@ Verify findings with authoritative sources:
 | **Shadcn** | Component design patterns | shadcn/ui component usage |
 | **Chrome** | Runtime behavior validation | E2E testing, browser behavior |
 
-#### MCP Verification Pattern
-
+**MCP Verification Pattern:**
 ```markdown
 ## Intel Finding
-useEffect at src/LoginForm.tsx:45 has dependency [state]
+[What intelligence queries revealed]
 
 ## MCP Verification
-**Tool:** Ref MCP
-**Query:** ref_search_documentation "React useEffect dependencies"
-**Result:** Official React docs confirm dependencies should include all values referenced in effect body
+**Tool:** [Which MCP tool]
+**Query:** [Exact query executed]
+**Result:** [What authoritative source says]
 
 ## Comparison
-- **Intel shows:** [state]
-- **Docs require:** [state, setState, callback]
-- **Conclusion:** Missing dependencies confirmed ✓
+- **Intel shows:** [From project-intel.mjs]
+- **Docs require:** [From MCP verification]
+- **Conclusion:** [Agreement or discrepancy]
 ```
 
-**Enforcement:**
+**Enforcement Checklist:**
 - [ ] At least 1 MCP verification for non-trivial findings
 - [ ] MCP results documented in Evidence section
 - [ ] Discrepancies between intel and MCP flagged
+
+**See:** @.claude/skills/analyze-code/workflows/analysis-workflow.md for complete verification examples
+
+---
 
 ### Phase 4: Generate Report
 
 Create comprehensive report using **@.claude/templates/report.md**
 
-#### Required: CoD^Σ Trace
+**Required: CoD^Σ Trace**
 
-Every report MUST include complete reasoning chain:
+Every report MUST include complete reasoning chain with symbolic operators:
 
 ```markdown
 ## CoD^Σ Trace
 
-**Claim:** LoginForm re-renders infinitely due to incomplete useEffect dependencies
+**Claim:** [Your conclusion with file:line reference]
 
 **Trace:**
 ```
-Step 1: → IntelQuery("search login")
-  ↳ Source: project-intel.mjs --search "login" --type tsx
-  ↳ Data: Found LoginForm.tsx, LoginButton.tsx, LoginAPI.ts
-  ↳ Tokens: 100
+Step 1: → IntelQuery("search <pattern>")
+  ↳ Source: project-intel.mjs --search "<pattern>" --type <type>
+  ↳ Data: [What was found]
+  ↳ Tokens: [Token count]
 
 Step 2: ⇄ IntelQuery("analyze symbols")
-  ↳ Source: project-intel.mjs --symbols src/components/LoginForm.tsx
-  ↳ Data: LoginForm at line 12, useEffect at line 45
-  ↳ Tokens: 150
+  ↳ Source: project-intel.mjs --symbols <file>
+  ↳ Data: [Functions/classes found with line numbers]
+  ↳ Tokens: [Token count]
 
-Step 3: → TargetedRead(lines 40-60)
-  ↳ Source: sed -n '40,60p' src/components/LoginForm.tsx
-  ↳ Data: useEffect(() => { setUser({...user, lastLogin: Date.now()}) }, [user])
-  ↳ Tokens: 100
+Step 3: → TargetedRead(lines X-Y)
+  ↳ Source: Read <file> (lines X-Y only)
+  ↳ Data: [Relevant code excerpt]
+  ↳ Tokens: [Token count]
 
-Step 4: ⊕ MCPVerify("React docs")
-  ↳ Tool: Ref MCP - "React useEffect dependencies"
-  ↳ Data: "Every value referenced inside effect must be in dependency array"
-  ↳ Tokens: 200
+Step 4: ⊕ MCPVerify("<tool>")
+  ↳ Tool: <MCP tool> - "<query>"
+  ↳ Data: [What authoritative source says]
+  ↳ Tokens: [Token count]
 
 Step 5: ∘ Conclusion
-  ↳ Logic: Effect depends on [user] but mutates user → infinite loop
-  ↳ Root Cause: src/components/LoginForm.tsx:47 - incomplete dependency array
-  ↳ Fix: Use functional setState or remove user from dependencies
+  ↳ Logic: [Reasoning from data to conclusion]
+  ↳ Root Cause: <file>:<line> - [What's wrong]
+  ↳ Fix: [How to resolve]
 ```
-**Total Tokens:** 550 (vs 3000+ for reading full file)
+**Total Tokens:** [Sum] (vs [baseline] for reading full files)
+**Savings:** [Percentage]
+```
 ```
 
-#### Report Sections
+**Report Sections:**
 
-1. **Summary** (max 200 tokens)
-   - Key finding
-   - Root cause with file:line
-   - Recommended fix
+1. **Summary** (max 200 tokens): Key finding, root cause with file:line, recommended fix
+2. **CoD^Σ Trace** (as shown above): Complete reasoning chain, token counts, savings
+3. **Evidence**: All intel query results, MCP verification, targeted file excerpts
+4. **Recommendations**: Specific fixes, implementation guidance, testing approach
 
-2. **CoD^Σ Trace** (as shown above)
-   - Complete reasoning chain
-   - Token count for each step
-   - Final token savings calculation
+**File Naming:** `YYYYMMDD-HHMM-report-<id>.md`
 
-3. **Evidence**
-   - All intel query results
-   - MCP verification results
-   - Targeted file excerpts
-
-4. **Recommendations**
-   - Specific, actionable fixes
-   - Implementation guidance
-   - Testing approach
-
-#### File Naming
-
-Save as: `YYYYMMDD-HHMM-report-<id>.md`
-
-Example: `20250119-1430-report-login-infinite-render.md`
-
-**Enforcement:**
+**Enforcement Checklist:**
 - [ ] Report uses template structure
 - [ ] CoD^Σ trace complete
 - [ ] Every claim has file:line or MCP evidence
 - [ ] Recommendations are specific
 - [ ] Total report ≤ 1000 tokens when populated
 
-## Analysis Type Decision Trees
+**See:** @.claude/skills/analyze-code/workflows/analysis-workflow.md for complete report examples
 
-### Tree 1: Bug Diagnosis
+---
 
-```
-User reports error/bug
-    ↓
-1. Search for error message/symptom keywords (project-intel.mjs --search)
-    ↓
-2. Locate function/component with issue (--symbols)
-    ↓
-3. Trace dependencies upstream (what does it use?)
-    ↓
-4. Find discrepancy (missing check, wrong data)
-    ↓
-5. Verify with MCP if library-related
-    ↓
-6. Report with root cause at file:line
-```
+## Decision Trees for Different Analysis Types
 
-### Tree 2: Architecture Analysis
+**See:** @.claude/skills/analyze-code/references/decision-trees.md
 
-```
-User wants to understand system design
-    ↓
-1. Get project overview (project-intel.mjs --overview)
-    ↓
-2. Identify entry points
-    ↓
-3. Trace dependencies from entry points (--dependencies --downstream)
-    ↓
-4. Build dependency graph
-    ↓
-5. Analyze patterns:
-   - Circular dependencies?
-   - Deep nesting?
-   - Tight coupling?
-    ↓
-6. Report with visualization (mermaid diagram)
-```
+**Summary:**
 
-### Tree 3: Performance Analysis
+- **Tree 1: Bug Diagnosis** - Search error → Locate function → Trace dependencies → Find discrepancy → Verify with MCP → Report
+- **Tree 2: Architecture Analysis** - Get overview → Identify entry points → Trace dependencies → Build graph → Analyze patterns → Report
+- **Tree 3: Performance Analysis** - Search slow operations → Trace data flow → Identify bottlenecks → Measure impact → Verify best practices → Report
 
-```
-User reports slow operation
-    ↓
-1. Search for suspected slow operations (queries, loops)
-    ↓
-2. Trace data flow from source to sink
-    ↓
-3. Identify bottlenecks:
-   - N+1 queries?
-   - Unnecessary re-renders?
-   - Large data processing?
-    ↓
-4. Measure impact (how many times called?)
-    ↓
-5. Verify best practices with MCP
-    ↓
-6. Report with optimization recommendations
-```
+Choose based on user's request type. Can combine multiple trees for complex analyses.
+
+---
 
 ## Enforcement Rules
 
+**See:** @.claude/skills/analyze-code/references/enforcement-rules.md
+
+**Summary:**
+
 ### Rule 1: No Naked Claims
-
-**❌ Violation:**
-```
-The login form has a bug in the useEffect.
-```
-
-**✓ Correct:**
-```
-The login form has a bug at src/LoginForm.tsx:45 in the useEffect hook.
-
-Evidence:
-- Intel Query: project-intel.mjs --symbols src/LoginForm.tsx
-- Result: useEffect at line 45 with dependency [state]
-- MCP Verify: Ref MCP confirms dependencies should include all referenced values
-- Targeted Read: Lines 40-50 show effect mutates state while depending on it
-```
+Every claim MUST have file:line reference and evidence from intelligence queries or MCP verification.
 
 ### Rule 2: Intel Before Reading
-
-**❌ Violation:**
-```bash
-# Agent reads entire file (1000 lines, ~3000 tokens)
-cat src/LoginForm.tsx
-```
-
-**✓ Correct:**
-```bash
-# Agent queries intel first (~50 tokens)
-project-intel.mjs --symbols src/LoginForm.tsx --json
-# Result: LoginForm at line 12, useEffect at 45
-
-# Read ONLY relevant lines (~100 tokens)
-sed -n '40,60p' src/LoginForm.tsx
-```
-**Token Savings:** 96% reduction
+Query project-intel.mjs BEFORE reading any files. Achieve 90-97% token savings.
 
 ### Rule 3: MCP for Authority
+Verify library/framework behavior with authoritative MCP sources, not memory or assumptions.
 
-**❌ Violation:**
-```
-Based on my knowledge, useEffect should include all dependencies.
-```
+**These rules are non-negotiable. Violations invalidate the analysis.**
 
-**✓ Correct:**
-```
-MCP Verification (Ref): ref_search_documentation "React useEffect dependencies"
-Official React docs confirm: "Every value referenced inside effect must be in dependency array."
-Source: https://react.dev/reference/react/useEffect
-```
+---
 
 ## Common Pitfalls
 
@@ -395,6 +289,8 @@ Source: https://react.dev/reference/react/useEffect
 | Vague conclusions | Not actionable | Always include file:line references |
 | No MCP verification | Incorrect assumptions | Verify library behavior with Ref MCP |
 | Incomplete CoD^Σ trace | Can't verify reasoning | Document every reasoning step |
+
+---
 
 ## Success Metrics
 
@@ -411,6 +307,8 @@ Source: https://react.dev/reference/react/useEffect
 - All claims evidenced: 100%
 - CoD^Σ trace complete: 100%
 
+---
+
 ## When to Use This Skill
 
 **Use analyze-code when:**
@@ -425,6 +323,8 @@ Source: https://react.dev/reference/react/useEffect
 - User wants to write new code (use planning skill)
 - User wants to implement a fix (use execution skill)
 
+---
+
 ## Prerequisites
 
 Before using this skill:
@@ -432,6 +332,8 @@ Before using this skill:
 - ✅ project-intel.mjs is executable
 - ✅ Code to analyze exists in repository
 - ⚠️ For external library analysis: MCP tools configured (Ref, Context7)
+
+---
 
 ## Dependencies
 
@@ -446,6 +348,8 @@ Before using this skill:
 - project-intel.mjs (intelligence queries)
 - MCP Ref tool (library documentation)
 - MCP Context7 tool (external docs)
+
+---
 
 ## Next Steps
 
@@ -471,34 +375,23 @@ analyze-code → create-implementation-plan skill (refactoring) → implement-an
 - `/plan` - To create implementation plan for fixes
 - `/implement` - After plan exists, to execute changes
 
+---
+
 ## Failure Modes
 
-### Common Failures & Solutions
+**See:** @.claude/skills/analyze-code/references/failure-modes.md
 
-**1. PROJECT_INDEX.json missing**
-- **Symptom**: Intel queries fail or return no results
-- **Solution**: Run `/index` command to generate index
-- **Prevention**: Hook auto-generates index on file changes
+**Summary of 5 Common Failures:**
 
-**2. Intelligence queries return no results**
-- **Symptom**: Searches don't find expected code
-- **Solution**: Verify file patterns, check .gitignore exclusions
-- **Diagnosis**: Run `project-intel.mjs --overview --json` to verify index contents
+1. **PROJECT_INDEX.json Missing** - Solution: Run `/index`
+2. **Intelligence Queries Return No Results** - Solution: Regenerate index, broaden search
+3. **MCP Tools Not Available** - Solution: Configure .mcp.json, use workaround
+4. **Analysis Scope Too Broad** - Solution: Define narrow scope in analysis-spec.md
+5. **CoD^Σ Evidence Missing** - Solution: Save intel results, complete CoD^Σ trace
 
-**3. MCP tools not available**
-- **Symptom**: Library documentation queries fail
-- **Solution**: Configure MCP servers in .mcp.json
-- **Workaround**: Skip external library analysis, focus on internal code
+**Diagnostic Workflow**: Check index → Check queries → Check MCP → Check scope → Check evidence
 
-**4. Analysis too broad**
-- **Symptom**: Token limit exceeded, incomplete analysis
-- **Solution**: Narrow scope with specific search terms
-- **Prevention**: Start with targeted intel queries before broad analysis
-
-**5. CoD^Σ evidence missing**
-- **Symptom**: Claims lack file:line references
-- **Solution**: Re-run analysis with explicit evidence requirement
-- **Prevention**: Always include intelligence query results in analysis
+---
 
 ## Related Skills & Commands
 
@@ -513,8 +406,53 @@ analyze-code → create-implementation-plan skill (refactoring) → implement-an
 - Triggers: User mentions "analyze", "review", "understand", "architecture"
 - Output: report.md or analysis-spec.md using templates
 
+---
+
+## Agent Integration
+
+**Subagent Usage**:
+
+When the code-analyzer subagent delegates work to this skill, it provides:
+- Initial problem statement
+- Suspected file locations (if known)
+- Context from user conversation
+
+This skill then:
+1. Creates analysis-spec.md from provided context
+2. Executes intelligence queries
+3. Generates report with CoD^Σ trace
+4. Returns findings to subagent
+
+**Task Tool Example**:
+```python
+# From code-analyzer subagent
+Task(
+    subagent_type="code-analyzer",
+    description="Analyze infinite render bug",
+    prompt="""
+    @.claude/skills/analyze-code/SKILL.md
+
+    User reports: LoginForm component re-renders infinitely
+
+    Use intelligence-first approach:
+    1. Query project-intel.mjs for LoginForm location
+    2. Analyze symbols to find hooks
+    3. Verify React patterns with MCP Ref
+    4. Generate report with CoD^Σ trace
+
+    Output: Complete report.md with root cause and fix
+    """
+)
+```
+
+---
+
 ## Version
 
-**Version:** 1.0
-**Last Updated:** 2025-10-19
+**Version:** 1.1.0
+**Last Updated:** 2025-10-23
+**Change Log**:
+- v1.1.0 (2025-10-23): Refactored to progressive disclosure pattern (<500 lines)
+- v1.0.0 (2025-10-19): Initial version
+
 **Owner:** Claude Code Intelligence Toolkit

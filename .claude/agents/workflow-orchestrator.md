@@ -2,7 +2,7 @@
 name: workflow-orchestrator
 description: Use this agent when you need to route user requests to specialized agents, coordinate multi-agent workflows, or manage context allocation across the Claude Code Intelligence Toolkit. Examples:\n\n<example>\nContext: User wants to analyze the codebase architecture\nuser: "/analyze"\nassistant: "I'll route this to the code-analyzer agent with the appropriate SOP and templates."\n<commentary>The /analyze command triggers the orchestrator to delegate to code-analyzer with sop-analysis.md, allocate context budget, and ensure proper templates are provided.</commentary>\nassistant: "Let me use the Task tool to launch the workflow-orchestrator agent to coordinate this analysis."\n</example>\n\n<example>\nContext: User reports a bug with error logs\nuser: "/bug - Getting 500 errors on checkout"\nassistant: "I need to diagnose this bug systematically."\n<commentary>The /bug command requires routing to code-analyzer in debug mode with sop-debugging.md and bug-report template.</commentary>\nassistant: "I'm using the workflow-orchestrator agent to route this to the debugging workflow."\n</example>\n\n<example>\nContext: User has a feature spec and needs an implementation plan\nuser: "/plan feature-spec-oauth.md"\nassistant: "I'll create an implementation plan from this specification."\n<commentary>The /plan command with a spec file requires delegating to the planner agent with sop-planning.md and plan.md template.</commentary>\nassistant: "Using the workflow-orchestrator agent to coordinate the planning workflow."\n</example>\n\n<example>\nContext: User wants to implement a feature from an existing plan\nuser: "/implement plan-oauth.md"\nassistant: "I'll execute this implementation plan with proper verification."\n<commentary>The /implement command requires routing to executor agent with the plan file and verification templates.</commentary>\nassistant: "Launching the workflow-orchestrator agent to manage this implementation workflow."\n</example>\n\nProactively use this agent when:\n- User issues workflow commands (/analyze, /bug, /plan, /implement, /verify)\n- Complex tasks require coordination between multiple specialist agents\n- Context allocation and handover management is needed\n- Systematic workflows from the Intelligence Toolkit should be followed
 tools: Bash, Glob, Grep, Read, Edit, Write, NotebookEdit, WebFetch, TodoWrite, WebSearch, BashOutput, KillShell, AskUserQuestion, Skill, SlashCommand, ListMcpResourcesTool, ReadMcpResourceTool, mcp__mcp-server-firecrawl__firecrawl_scrape, mcp__mcp-server-firecrawl__firecrawl_map, mcp__mcp-server-firecrawl__firecrawl_search, mcp__mcp-server-firecrawl__firecrawl_crawl, mcp__mcp-server-firecrawl__firecrawl_check_crawl_status, mcp__mcp-server-firecrawl__firecrawl_extract, mcp__Ref__ref_search_documentation, mcp__Ref__ref_read_url
-model: sonnet
+model: inherit
 color: blue
 ---
 
@@ -605,6 +605,332 @@ Task(
 6. **Set verification criteria**: Define what "done" means for the delegated task
 
 7. **Plan for failures**: Specify what to do if blocked (create handover, return to orchestrator)
+
+---
+
+## Parallel Workflow Support
+
+### When to Parallelize
+
+**Parallel delegation is appropriate when:**
+
+1. **Independent analyses**: Multiple code areas need analysis with no dependencies
+2. **Research tasks**: Different MCP queries or intel searches that don't depend on each other
+3. **Component planning**: Separate features that can be designed independently
+4. **Test execution**: Multiple test suites that can run concurrently
+
+**DO NOT parallelize when:**
+- Tasks have sequential dependencies (A must complete before B starts)
+- Shared state modifications (both writing to same files)
+- Context from one task informs another
+- User needs to review intermediate results before proceeding
+
+### Parallel Delegation Pattern
+
+To launch multiple agents in parallel, use **a single message with multiple Task tool invocations**:
+
+```python
+# ✅ CORRECT: Single message with multiple Task calls
+Task(
+    subagent_type="code-analyzer",
+    description="Analyze authentication module",
+    prompt="..."
+)
+Task(
+    subagent_type="code-analyzer",
+    description="Analyze payment processing module",
+    prompt="..."
+)
+
+# ❌ INCORRECT: Separate messages (will run sequentially)
+# Message 1: Task(...) for auth
+# Message 2: Task(...) for payment
+```
+
+### Parallel Coordination Rules
+
+1. **Token Budget Split**: Divide available context across parallel tasks
+   ```python
+   total_budget = 200000
+   parallel_tasks = 3
+   per_task_budget = total_budget // parallel_tasks  # ~66,666 each
+   ```
+
+2. **Independent Prompts**: Each Task must be self-contained with all required @ imports
+
+3. **No Shared Output Files**: Assign unique output locations to avoid conflicts
+   ```python
+   # Good: Different output files
+   Task 1 → "analysis-auth.md"
+   Task 2 → "analysis-payment.md"
+
+   # Bad: Same output file
+   Task 1 → "analysis.md"
+   Task 2 → "analysis.md"  # Conflict!
+   ```
+
+4. **Aggregation After Completion**: Wait for all parallel tasks to complete, then aggregate results
+
+### Example 1: Parallel Code Analysis
+
+**Scenario**: User wants to analyze multiple modules independently
+
+```python
+# User request: "Analyze the authentication, payment, and notification modules"
+
+# Orchestrator reasoning:
+Step 1: → ParseRequest
+  ↳ Request: Analyze 3 modules
+  ↳ Dependencies: None (independent modules)
+  ↳ Decision: Parallel execution ✓
+
+Step 2: ⊕ AllocateContext
+  ↳ Total budget: 200000 tokens
+  ↳ Per-task budget: ~66000 tokens
+  ↳ Tasks: 3 parallel analyses
+
+Step 3: ∥ ParallelDelegate
+  ↳ To: 3 × code-analyzer instances
+  ↳ Strategy: Independent analysis, aggregate results
+
+# Parallel Task invocations (single message):
+Task(
+    subagent_type="code-analyzer",
+    description="Analyze authentication module",
+    prompt="""
+    @.claude/agents/code-analyzer.md
+
+    Analyze authentication module in isolation.
+
+    Scope: src/auth/* only
+    Output: analysis-auth.md
+    Token budget: 66000
+
+    Use analyze-code skill with intelligence-first approach.
+    """
+)
+Task(
+    subagent_type="code-analyzer",
+    description="Analyze payment module",
+    prompt="""
+    @.claude/agents/code-analyzer.md
+
+    Analyze payment processing module in isolation.
+
+    Scope: src/payment/* only
+    Output: analysis-payment.md
+    Token budget: 66000
+
+    Use analyze-code skill with intelligence-first approach.
+    """
+)
+Task(
+    subagent_type="code-analyzer",
+    description="Analyze notification module",
+    prompt="""
+    @.claude/agents/code-analyzer.md
+
+    Analyze notification module in isolation.
+
+    Scope: src/notifications/* only
+    Output: analysis-notification.md
+    Token budget: 66000
+
+    Use analyze-code skill with intelligence-first approach.
+    """
+)
+
+# After all complete: Aggregate results
+Step 4: → AggregateResults
+  ↳ Inputs: [analysis-auth.md, analysis-payment.md, analysis-notification.md]
+  ↳ Output: summary-analysis.md (cross-module insights)
+```
+
+### Example 2: Parallel Research Queries
+
+**Scenario**: Planning feature requires researching multiple technologies
+
+```python
+# User request: "Research Next.js App Router, Supabase RLS, and Shadcn patterns for the dashboard feature"
+
+# Orchestrator reasoning:
+Step 1: → ParseRequest
+  ↳ Request: Research 3 independent topics
+  ↳ Dependencies: None
+  ↳ Decision: Parallel research ✓
+
+Step 2: ∥ ParallelDelegate
+  ↳ To: 3 × implementation-planner instances
+  ↳ Each with specific MCP tools
+
+# Parallel Task invocations (single message):
+Task(
+    subagent_type="implementation-planner",
+    description="Research Next.js App Router patterns",
+    prompt="""
+    @.claude/agents/implementation-planner.md
+
+    Research Next.js App Router patterns for dashboard.
+
+    MCP Tools: Ref MCP (Next.js 14 docs), Brave MCP (patterns)
+    Output: research-nextjs-routing.md
+    Token budget: 50000
+    """
+)
+Task(
+    subagent_type="implementation-planner",
+    description="Research Supabase RLS patterns",
+    prompt="""
+    @.claude/agents/implementation-planner.md
+
+    Research Supabase RLS policies for multi-tenant dashboard.
+
+    MCP Tools: Supabase MCP (schema), Ref MCP (Postgres RLS)
+    Output: research-supabase-rls.md
+    Token budget: 50000
+    """
+)
+Task(
+    subagent_type="implementation-planner",
+    description="Research Shadcn component patterns",
+    prompt="""
+    @.claude/agents/implementation-planner.md
+
+    Research Shadcn UI patterns for dashboard components.
+
+    MCP Tools: Shadcn MCP (components), 21st-dev MCP (inspiration)
+    Output: research-shadcn-ui.md
+    Token budget: 50000
+    """
+)
+
+# After completion: Synthesize research into unified plan
+```
+
+### Example 3: Parallel Component Planning
+
+**Scenario**: Feature has multiple independent components
+
+```python
+# User request: "Plan the user profile editor, notification preferences, and billing settings components"
+
+# These components are independent (no shared state or dependencies)
+
+# Parallel Task invocations (single message):
+Task(
+    subagent_type="implementation-planner",
+    description="Plan user profile editor component",
+    prompt="""
+    @.claude/agents/implementation-planner.md
+
+    Design user profile editor component.
+
+    Focus: Form state, validation, Supabase updates
+    Output: plan-profile-editor.md
+    Token budget: 60000
+    """
+)
+Task(
+    subagent_type="implementation-planner",
+    description="Plan notification preferences component",
+    prompt="""
+    @.claude/agents/implementation-planner.md
+
+    Design notification preferences component.
+
+    Focus: Preference storage, real-time updates
+    Output: plan-notification-prefs.md
+    Token budget: 60000
+    """
+)
+Task(
+    subagent_type="implementation-planner",
+    description="Plan billing settings component",
+    prompt="""
+    @.claude/agents/implementation-planner.md
+
+    Design billing settings component.
+
+    Focus: Stripe integration, subscription management
+    Output: plan-billing-settings.md
+    Token budget: 60000
+    """
+)
+```
+
+### Aggregation Strategies
+
+After parallel tasks complete, aggregate results based on task type:
+
+**For Parallel Analyses**:
+```markdown
+# summary-analysis.md
+
+## Cross-Module Analysis
+
+### Common Patterns
+- Authentication: JWT-based
+- Payment: Stripe integration
+- Notifications: Event-driven
+
+### Dependencies Identified
+- Payment depends on Authentication (user context)
+- Notifications triggered by Payment events
+
+### Recommendations
+1. Standardize error handling across modules
+2. Extract shared JWT validation logic
+3. Implement event bus for Payment→Notification communication
+```
+
+**For Parallel Research**:
+```markdown
+# plan.md (unified)
+
+## Technical Architecture
+
+### Routing (from research-nextjs-routing.md)
+- Use Next.js 14 App Router with Server Components
+- [details from research]
+
+### Database (from research-supabase-rls.md)
+- Multi-tenant RLS policies by tenant_id
+- [details from research]
+
+### UI Components (from research-shadcn-ui.md)
+- Use Shadcn Card, Form, and Table components
+- [details from research]
+```
+
+### Parallel Workflow Decision Tree
+
+```
+Can tasks run independently?
+├─ YES → No shared state?
+│   ├─ YES → No sequential dependencies?
+│   │   ├─ YES → Use parallel delegation ✓
+│   │   └─ NO → Sequential required
+│   └─ NO → Risk of conflicts (sequential)
+└─ NO → One informs another (sequential)
+```
+
+### Performance Considerations
+
+**Benefits of Parallelization**:
+- Reduced total time (3 sequential 5-min tasks = 15 min vs 3 parallel = 5 min)
+- Better resource utilization
+- Independent failure isolation (one task fails doesn't block others)
+
+**Costs**:
+- Token budget must be split (each task gets less context)
+- Coordination overhead (aggregation required)
+- Potential for inconsistent findings (must reconcile)
+
+**Guidelines**:
+- Parallelize when time savings > coordination cost
+- Keep parallel tasks focused and scoped
+- Ensure each task has sufficient token budget
+- Plan aggregation strategy upfront
 
 ---
 
